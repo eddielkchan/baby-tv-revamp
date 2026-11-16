@@ -50,6 +50,7 @@
     padding:env(safe-area-inset-top) 16px 0 8px;
     display:grid;grid-template-columns:auto minmax(0,1fr) auto;
     align-items:center;gap:12px;background:var(--header);
+    position:relative;z-index:30;
   }
   .left,.right{display:flex;align-items:center;gap:4px;min-width:0}
   .right{gap:8px;padding-right:4px}
@@ -71,14 +72,25 @@
   }
   .brand-name{font-weight:700;letter-spacing:-.8px}
   .brand-mark svg{margin-left:2px}
-  .search{display:flex;align-items:center;width:100%;max-width:640px;margin:0 auto;min-width:0}
+  .search-wrap{position:relative;width:100%;max-width:640px;margin:0 auto;min-width:0}
+  .search{display:flex;align-items:center;width:100%;min-width:0}
+  .search-field{
+    flex:1;min-width:0;display:flex;align-items:center;height:40px;
+    border:1px solid var(--search-border);border-right:0;border-radius:40px 0 0 40px;
+    background:var(--header);
+  }
+  .search-field:focus-within{border-color:#1c62b9;box-shadow:inset 0 0 0 1px #1c62b9}
   .search input{
-    flex:1;min-width:0;height:40px;border:1px solid var(--search-border);border-right:0;
-    border-radius:40px 0 0 40px;padding:0 4px 0 16px;background:var(--header);
-    font-size:16px;outline:none;
+    flex:1;min-width:0;height:100%;border:0;border-radius:40px 0 0 40px;
+    padding:0 4px 0 16px;background:transparent;font-size:16px;outline:none;
   }
   .search input::placeholder{color:var(--muted)}
-  .search input:focus{border-color:#1c62b9;box-shadow:inset 0 0 0 1px #1c62b9}
+  .mic-btn{
+    width:36px;height:36px;margin-right:2px;border:0;border-radius:50%;
+    background:transparent;color:var(--text);display:grid;place-items:center;flex-shrink:0;
+  }
+  .mic-btn:hover{background:var(--hover)}
+  .mic-btn.live{background:var(--red);color:#fff}
   .search-go{
     width:64px;height:40px;border:1px solid var(--search-border);
     border-radius:0 40px 40px 0;background:var(--search-btn);color:var(--text);
@@ -170,9 +182,13 @@
   .ch-name{font-size:16px;font-weight:500}
   .ch-sub{margin-top:2px;font-size:12px;color:var(--muted)}
   .desc{
-    margin-top:16px;background:var(--bg-soft);border-radius:12px;
-    padding:12px 14px;font-size:14px;line-height:1.55;
+    display:block;width:100%;margin-top:16px;background:var(--bg-soft);border:0;border-radius:12px;
+    padding:12px 14px;font-size:14px;line-height:1.55;text-align:left;cursor:pointer;color:var(--text);
   }
+  .desc-line{display:block;font-weight:500}
+  .desc-body{display:none;margin-top:8px}
+  .desc.open .desc-body{display:block}
+  .desc-more{display:block;margin-top:6px;font-weight:500}
   .upnext-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:16px;font-weight:500}
   .auto-pill{font-size:12px;font-weight:500;color:var(--muted);background:var(--bg-soft);border-radius:999px;padding:6px 10px}
   .up-item{
@@ -270,6 +286,91 @@
   .statrow b{color:var(--text);font-weight:500}
   .statbar{height:4px;background:var(--bg-soft);border-radius:2px;overflow:hidden;margin:2px 0 8px}
   .statbar>div{height:100%;background:var(--red)}
+
+  .suggest{
+    position:absolute;left:0;right:0;top:46px;z-index:5;
+    background:var(--bg);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 8px 28px rgba(0,0,0,.18);display:none;padding:8px 0;overflow:hidden;
+  }
+  .suggest.show{display:block}
+  .suggest button{
+    display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;
+    border:0;background:transparent;text-align:left;padding:8px 16px;font-size:15px;
+  }
+  .suggest button small{color:var(--muted);font-size:12px;flex-shrink:0}
+  .suggest button.on,.suggest button:hover{background:var(--hover)}
+  .dur{
+    position:absolute;right:4px;bottom:8px;background:rgba(0,0,0,.82);color:#fff;
+    font-size:12px;font-weight:500;line-height:1.2;padding:2px 4px;border-radius:4px;
+  }
+  .up-thumb .dur{font-size:11px;bottom:4px}
+  .progress{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.35)}
+  .progress>i{display:block;height:100%;background:var(--red);width:0}
+  .shelves{display:none;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+  .shelves-on .shelves{display:block}
+  .shelves-on .feed{display:none}
+  .shelf-head{padding:16px 24px 8px}
+  .shelf-title{
+    border:0;background:transparent;color:var(--text);font-size:20px;font-weight:700;
+    padding:4px 8px;border-radius:8px;text-align:left;
+  }
+  .shelf-title:hover{background:var(--hover)}
+  .shelf-scroller{position:relative}
+  .shelf-row{
+    display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:4px 24px 20px;scrollbar-width:none;
+  }
+  .shelf-row::-webkit-scrollbar{display:none}
+  .shelf-row .yt-card{flex:0 0 300px;width:300px;scroll-snap-align:start}
+  .shelf-nav{
+    position:absolute;top:42px;z-index:2;width:40px;height:40px;border:0;border-radius:50%;
+    background:var(--bg);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.28);font-size:26px;line-height:1;
+  }
+  .shelf-nav.prev{left:12px}
+  .shelf-nav.next{right:12px}
+  .ch-text{min-width:0;flex:1}
+  .ch-name,.ch-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .watch-primary{min-width:0}
+  .sub-btn{
+    margin-left:auto;height:36px;padding:0 16px;border:0;border-radius:18px;flex-shrink:0;
+    background:var(--text);color:var(--bg);font-weight:500;font-size:14px;
+  }
+  .sub-btn.on{background:var(--bg-soft);color:var(--text)}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .pill{
+    height:36px;padding:0 14px;border:0;border-radius:18px;background:var(--bg-soft);color:var(--text);
+    display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;
+  }
+  .pill:hover{background:var(--chip-hover)}
+  .pill.on{background:var(--text);color:var(--bg)}
+  .pill svg{display:block;flex-shrink:0}
+  .next-pop{
+    position:absolute;right:12px;bottom:68px;z-index:4;width:min(340px, calc(100% - 24px));
+    background:rgba(20,20,20,.94);color:#fff;border-radius:12px;padding:10px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .next-pop[hidden]{display:none !important}
+  .next-top{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:500}
+  .next-x{border:0;background:transparent;color:#fff;font-size:13px;font-weight:500}
+  .next-go{display:flex;gap:8px;width:100%;border:0;background:transparent;color:#fff;text-align:left;padding:0;align-items:center}
+  .next-go img{width:120px;height:68px;object-fit:cover;border-radius:8px;background:#000;flex-shrink:0}
+  .next-name{font-size:14px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .toast{
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    z-index:90;background:var(--text);color:var(--bg);border-radius:8px;padding:10px 14px;font-size:14px;
+    max-width:min(420px, calc(100% - 32px));pointer-events:none;
+  }
+  .toast[hidden]{display:none !important}
+  @media (max-width:799px){
+    .shelf-nav{display:none}
+    .next-pop{right:8px;bottom:52px;width:min(300px, calc(100% - 16px))}
+    .next-go img{width:96px;height:54px}
+  }
+  @media (max-width:699px){
+    .shelf-head{padding:14px 12px 6px}
+    .shelf-row{padding-left:12px;padding-right:12px}
+    .shelf-row .yt-card{flex-basis:240px;width:240px}
+  }
 </style>
 </head>
 <body>
@@ -284,12 +385,20 @@
       <span class="brand-name">YouTube</span>
     </button>
   </div>
+  <div class="search-wrap">
   <form class="search" id="searchForm" role="search">
-    <input id="searchInput" type="search" placeholder="搜尋片單" autocomplete="off" enterkeyhint="search" aria-label="搜尋片單">
+    <div class="search-field">
+      <input id="searchInput" type="search" placeholder="搜尋片單" autocomplete="off" enterkeyhint="search" aria-label="搜尋片單" aria-autocomplete="list" aria-controls="suggest">
+      <button class="mic-btn" id="micBtn" type="button" aria-label="語音搜尋" title="講片名來搜">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+      </button>
+    </div>
     <button class="search-go" type="submit" aria-label="搜尋">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
     </button>
   </form>
+  <div class="suggest" id="suggest" role="listbox"></div>
+  </div>
   <div class="right">
     <span class="time-chip" id="timeLeft"></span>
     <button class="avatar-btn" id="gearBtn" type="button" title="家長設定" aria-label="家長設定">
@@ -303,6 +412,14 @@
     <button class="side-item active" id="sideHome" type="button">
       <span class="side-ico"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
       <span class="side-text">首頁</span>
+    </button>
+    <button class="side-item" id="sideContinue" type="button">
+      <span class="side-ico"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" stroke="none"/></svg></span>
+      <span class="side-text">繼續睇</span>
+    </button>
+    <button class="side-item" id="sideHistory" type="button">
+      <span class="side-ico"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2" stroke-linecap="round"/></svg></span>
+      <span class="side-text">已睇紀錄</span>
     </button>
     <div class="side-label">電視台</div>
     <div id="sideCats"></div>
@@ -319,6 +436,7 @@
     <section class="view active" id="homeView">
       <div class="chips-wrap"><div class="chips" id="cats" role="tablist" aria-label="電視台"></div></div>
       <p id="resultLabel" hidden></p>
+      <div class="shelves" id="shelves"></div>
       <div class="feed" id="grid"></div>
     </section>
 
@@ -327,16 +445,49 @@
         <div class="watch-primary">
           <div class="frame-wrap">
             <div id="player"><div class="placeholder">揀條片開始播</div></div>
+            <div class="next-pop" id="nextPop" hidden>
+              <div class="next-top">
+                <span id="nextKicker">下一集</span>
+                <button class="next-x" id="nextCancel" type="button">取消</button>
+              </div>
+              <button class="next-go" id="nextGo" type="button">
+                <img id="nextImg" alt="">
+                <span class="next-name" id="nextName"></span>
+              </button>
+            </div>
           </div>
           <h1 class="watch-title" id="watchTitle"></h1>
           <div class="channel-row">
             <div class="avatar" id="watchAvatar"></div>
-            <div>
+            <div class="ch-text">
               <div class="ch-name" id="watchCat"></div>
-              <div class="ch-sub">白名單電視台</div>
+              <div class="ch-sub" id="watchSub">白名單電視台</div>
             </div>
+            <button class="sub-btn" id="subBtn" type="button" aria-pressed="false">訂閱</button>
           </div>
-          <p class="desc" id="watchDesc"></p>
+          <div class="actions">
+            <button class="pill" id="likeBtn" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+              <span id="likeLabel">讚</span>
+            </button>
+            <button class="pill" id="dislikeBtn" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+              <span id="dislikeLabel">踩</span>
+            </button>
+            <button class="pill" id="shareBtn" type="button">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+              <span>分享</span>
+            </button>
+            <button class="pill" id="saveBtn" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+              <span id="saveLabel">儲存</span>
+            </button>
+          </div>
+          <button class="desc" id="watchDesc" type="button" aria-expanded="false">
+            <span class="desc-line" id="descLine"></span>
+            <span class="desc-body" id="descBody"></span>
+            <span class="desc-more" id="descMore">更多</span>
+          </button>
         </div>
         <aside class="upnext-col" aria-label="下一個">
           <div class="upnext-head"><span>下一個</span><span class="auto-pill">自動連播</span></div>
@@ -448,6 +599,8 @@
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast" hidden></div>
 
 <script>
 const NB1="🔴 Numberblocks 1";
@@ -618,6 +771,19 @@ let LIMIT_WE = store.get("limitWe", oldLimit!==null?oldLimit:0);
 let BED = store.get("bed", {on:false,start:"20:00",end:"07:00"});
 let LOCKED_CATS = store.get("lockedCats", []);
 let SND = store.get("snd", true);
+const DURATIONS = {};
+let DUR_EXTRA = store.get("dur", {});
+if(!DUR_EXTRA || typeof DUR_EXTRA!=="object" || Array.isArray(DUR_EXTRA)) DUR_EXTRA={};
+let PROG = store.get("prog", {});
+if(!PROG || typeof PROG!=="object" || Array.isArray(PROG)) PROG={};
+let HIST = store.get("hist", []);
+if(!Array.isArray(HIST)) HIST=[];
+let SUBS = store.get("subs", []);
+if(!Array.isArray(SUBS)) SUBS=[];
+let SAVED = store.get("saved", []);
+if(!Array.isArray(SAVED)) SAVED=[];
+let REACT = store.get("react", {});
+if(!REACT || typeof REACT!=="object" || Array.isArray(REACT)) REACT={};
 
 function isWeekend(){ const d=new Date().getDay(); return d===0||d===6; }
 function limitToday(){ return isWeekend()?LIMIT_WE:LIMIT_WD; }
@@ -655,10 +821,16 @@ function blip(){
 }
 
 let currentCat="__all__";
+let viewMode="home";
 let playingCat=null;
 let playingId=null;
 let searchQuery="";
 let player=null, apiReady=false, pendingIdx=null, currentIdx=-1, playToken=0;
+let nextCancelled=false;
+let suggestHi=-1;
+let rec=null;
+let toastTimer=0;
+let durTimer=0, durPlayer=null, durQueue=[], durWait=null, durTries=0, durFails=0, durWanted=false;
 const catsEl=document.getElementById("cats");
 const grid=document.getElementById("grid");
 const sideCats=document.getElementById("sideCats");
@@ -667,6 +839,440 @@ const homeView=document.getElementById("homeView");
 const watchView=document.getElementById("watchView");
 const mainEl=document.getElementById("main");
 const searchInput=document.getElementById("searchInput");
+const sideContinue=document.getElementById("sideContinue");
+const sideHistory=document.getElementById("sideHistory");
+const suggestEl=document.getElementById("suggest");
+const micBtn=document.getElementById("micBtn");
+function fmtClock(sec){
+  sec=Math.max(0, Math.round(Number(sec)||0));
+  const h=Math.floor(sec/3600);
+  const m=Math.floor((sec%3600)/60);
+  const s=sec%60;
+  const pad=n=>String(n).padStart(2,"0");
+  return h ? h+":"+pad(m)+":"+pad(s) : m+":"+pad(s);
+}
+function knownDur(id){
+  if(DUR_EXTRA[id]) return DUR_EXTRA[id];
+  if(DURATIONS[id]) return DURATIONS[id];
+  const p=PROG[id];
+  return (p && p.dur) || 0;
+}
+function learnDur(id, sec){
+  sec=Math.round(Number(sec)||0);
+  if(!id || sec<1) return false;
+  const known=knownDur(id);
+  if(known && Math.abs(known-sec)<=1) return false;
+  DUR_EXTRA[id]=sec;
+  store.set("dur", DUR_EXTRA);
+  if(PROG[id] && !PROG[id].dur) PROG[id].dur=sec;
+  return true;
+}
+function saveProg(id, pos, dur){
+  PROG[id]={pos:Math.round(pos)||0, dur:Math.round(dur||0)||0, t:Date.now()};
+  store.set("prog", PROG);
+}
+function flushProgress(ended){
+  if(!playingId || !player || !player.getCurrentTime) return;
+  try{
+    const data=player.getVideoData ? player.getVideoData() : null;
+    const vid=data && data.video_id || "";
+    if(vid && vid!==playingId) return;
+    const dur=player.getDuration()||0;
+    let pos=player.getCurrentTime()||0;
+    if(dur>1 && learnDur(playingId, dur)) paintDurBadges();
+    if(ended && dur>1) pos=dur;
+    if(pos>=1 || (ended && dur>1)) saveProg(playingId, pos, dur);
+  }catch(e){}
+}
+function progressFrac(id){
+  const dur=knownDur(id);
+  const p=PROG[id];
+  if(p && p.pos>2){
+    const d=p.dur || dur;
+    if(d>0) return Math.max(0, Math.min(1, p.pos/d));
+  }
+  if(dur>0){
+    const sec=STAT_VIDS[id]||0;
+    if(sec>=3) return Math.max(0, Math.min(1, sec/dur));
+  }
+  return 0;
+}
+function isInProgress(id){
+  const p=PROG[id];
+  const dur=(p && p.dur) || knownDur(id);
+  if(p && p.pos>=8){
+    if(dur && p.pos>=dur-12) return false;
+    return true;
+  }
+  const sec=STAT_VIDS[id]||0;
+  if(sec>=15 && (!dur || sec<dur-12)) return true;
+  return false;
+}
+function touchHist(id){
+  HIST=HIST.filter(x=>x && x.id!==id);
+  HIST.unshift({id:id, t:Date.now()});
+  if(HIST.length>100) HIST.length=100;
+  store.set("hist", HIST);
+}
+function historyIds(){
+  const ids=[];
+  const seen=new Set();
+  HIST.forEach(h=>{
+    if(h && h.id && !seen.has(h.id)){ seen.add(h.id); ids.push(h.id); }
+  });
+  Object.keys(STAT_VIDS).sort((a,b)=>(STAT_VIDS[b]||0)-(STAT_VIDS[a]||0)).forEach(id=>{
+    if(!seen.has(id) && STAT_VIDS[id]>0){ seen.add(id); ids.push(id); }
+  });
+  return ids;
+}
+function videosFromIds(ids){
+  const out=[];
+  const seen=new Set();
+  (ids||[]).forEach(item=>{
+    const id=typeof item==="string" ? item : (item && item.id);
+    if(!id || seen.has(id)) return;
+    seen.add(id);
+    const v=VIDEOS.find(x=>x.id===id);
+    if(v && !isCatLocked(v.cat)) out.push(v);
+  });
+  return out;
+}
+function metaLine(v){
+  const name=splitCat(v.cat).name;
+  const sec=STAT_VIDS[v.id]||0;
+  if(sec>=60) return name+" · 睇過 "+Math.round(sec/60)+" 分鐘";
+  return name;
+}
+function startSecondsFor(id){
+  const p=PROG[id];
+  if(!p || p.pos<8) return 0;
+  const dur=p.dur || knownDur(id);
+  if(dur && p.pos>=dur-15) return 0;
+  return Math.floor(p.pos);
+}
+function decorateThumb(thumb, v){
+  const dur=knownDur(v.id);
+  if(dur){
+    const badge=document.createElement("span");
+    badge.className="dur";
+    badge.textContent=fmtClock(dur);
+    thumb.appendChild(badge);
+  }
+  const frac=progressFrac(v.id);
+  if(frac>=0.02){
+    const bar=document.createElement("div");
+    bar.className="progress";
+    const i=document.createElement("i");
+    i.style.width=Math.round(frac*100)+"%";
+    bar.appendChild(i);
+    thumb.appendChild(bar);
+  }
+}
+function paintDurBadges(){
+  document.querySelectorAll("[data-vid]").forEach(el=>{
+    const id=el.getAttribute("data-vid");
+    const thumb=el.querySelector(".thumb, .up-thumb");
+    if(!thumb || thumb.querySelector(".now-tag")) return;
+    const dur=knownDur(id);
+    if(dur){
+      let badge=thumb.querySelector(".dur");
+      if(!badge){
+        badge=document.createElement("span");
+        badge.className="dur";
+        thumb.appendChild(badge);
+      }
+      const text=fmtClock(dur);
+      if(badge.textContent!==text) badge.textContent=text;
+    }
+    const frac=progressFrac(id);
+    if(frac>=0.02){
+      let bar=thumb.querySelector(".progress");
+      if(!bar){
+        bar=document.createElement("div");
+        bar.className="progress";
+        bar.appendChild(document.createElement("i"));
+        thumb.appendChild(bar);
+      }
+      bar.firstChild.style.width=Math.round(frac*100)+"%";
+    }
+  });
+}
+function seasonLine(v, list){
+  const name=splitCat(v.cat).name;
+  const m=name.match(/(\d+)\s*$/);
+  const head=m ? ("第 "+m[1]+" 季") : name;
+  return head+" · 共 "+list.length+" 集";
+}
+function descBodyText(v){
+  const name=splitCat(v.cat).name;
+  return "播完會自動播「"+name+"」下一條，循環播放。搜尋、下一集同建議都只會喺你加入嘅片單入面，唔會出 YouTube 推薦。";
+}
+function currentVideo(){
+  const list=queueVideos();
+  return list[currentIdx] || null;
+}
+function paintWatchActions(v){
+  const subOn=SUBS.includes(v.cat);
+  const sub=document.getElementById("subBtn");
+  sub.classList.toggle("on", subOn);
+  sub.textContent=subOn ? "已訂閱" : "訂閱";
+  sub.setAttribute("aria-pressed", subOn ? "true" : "false");
+  document.getElementById("watchSub").textContent=subOn ? "已訂閱，只記喺呢部機" : "白名單電視台";
+  const react=REACT[v.id] || "";
+  const like=document.getElementById("likeBtn");
+  const dislike=document.getElementById("dislikeBtn");
+  like.classList.toggle("on", react==="like");
+  dislike.classList.toggle("on", react==="dislike");
+  like.setAttribute("aria-pressed", react==="like" ? "true" : "false");
+  dislike.setAttribute("aria-pressed", react==="dislike" ? "true" : "false");
+  document.getElementById("likeLabel").textContent=react==="like" ? "已讚" : "讚";
+  document.getElementById("dislikeLabel").textContent=react==="dislike" ? "已踩" : "踩";
+  const saved=SAVED.includes(v.id);
+  const save=document.getElementById("saveBtn");
+  save.classList.toggle("on", saved);
+  save.setAttribute("aria-pressed", saved ? "true" : "false");
+  document.getElementById("saveLabel").textContent=saved ? "已儲存" : "儲存";
+}
+function paintDesc(v, list){
+  document.getElementById("descLine").textContent=seasonLine(v, list);
+  document.getElementById("descBody").textContent=descBodyText(v);
+  const box=document.getElementById("watchDesc");
+  box.classList.remove("open");
+  document.getElementById("descMore").textContent="更多";
+  box.setAttribute("aria-expanded", "false");
+}
+function toast(msg){
+  const el=document.getElementById("toast");
+  if(!el) return;
+  el.hidden=false;
+  el.textContent=msg;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ el.hidden=true; }, 2200);
+}
+function shareCurrent(){
+  const v=currentVideo();
+  if(!v) return;
+  const url=location.origin+location.pathname+location.search+"#v="+encodeURIComponent(v.id);
+  const go=()=>{
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(url).then(()=>toast("已複製連結")).catch(()=>toast(url));
+    }else toast(url);
+  };
+  if(navigator.share){
+    navigator.share({title:v.name, text:v.name+" · "+v.cat, url}).catch(e=>{
+      if(e && e.name==="AbortError") return;
+      go();
+    });
+  }else go();
+}
+function stopMic(){
+  const r=rec;
+  rec=null;
+  if(micBtn) micBtn.classList.remove("live");
+  if(!r) return;
+  try{ r.onresult=null; r.stop(); }catch(e){}
+}
+function hideNext(){
+  const pop=document.getElementById("nextPop");
+  if(pop) pop.hidden=true;
+}
+function showNext(list, i, left){
+  if(!list.length){ hideNext(); return; }
+  const n=list[(i+1)%list.length];
+  if(!n){ hideNext(); return; }
+  const pop=document.getElementById("nextPop");
+  pop.hidden=false;
+  document.getElementById("nextKicker").textContent=(list.length<2 ? "重播" : "下一集")+" · "+Math.max(1, Math.ceil(left));
+  document.getElementById("nextName").textContent=n.name;
+  const img=document.getElementById("nextImg");
+  const src="https://i.ytimg.com/vi/"+n.id+"/mqdefault.jpg";
+  if(img.getAttribute("src")!==src) img.src=src;
+}
+function tickNext(){
+  if(!watchView.classList.contains("active") || nextCancelled || !player || typeof player.getPlayerState!=="function"){
+    hideNext();
+    return;
+  }
+  try{
+    if(typeof YT==="undefined" || player.getPlayerState()!==YT.PlayerState.PLAYING){ hideNext(); return; }
+    const dur=player.getDuration()||0;
+    const pos=player.getCurrentTime()||0;
+    const left=dur-pos;
+    const list=queueVideos();
+    if(dur>15 && left<=8 && left>0.25 && list.length) showNext(list, currentIdx, left);
+    else hideNext();
+  }catch(e){ hideNext(); }
+}
+function addShelf(title, list, onTitle){
+  const box=document.getElementById("shelves");
+  const shelf=document.createElement("section");
+  shelf.className="shelf";
+  const head=document.createElement("div");
+  head.className="shelf-head";
+  const h=document.createElement("button");
+  h.type="button";
+  h.className="shelf-title";
+  h.textContent=title;
+  h.addEventListener("click", onTitle);
+  head.appendChild(h);
+  const scroller=document.createElement("div");
+  scroller.className="shelf-scroller";
+  const row=document.createElement("div");
+  row.className="shelf-row";
+  list.forEach(v=>row.appendChild(renderCard(v)));
+  const nav=(dir, label)=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="shelf-nav "+(dir<0 ? "prev" : "next");
+    b.setAttribute("aria-label", label);
+    b.textContent=dir<0 ? "‹" : "›";
+    b.addEventListener("click", ()=>row.scrollBy({left:dir*Math.max(240, row.clientWidth*0.8), behavior:"smooth"}));
+    return b;
+  };
+  scroller.append(nav(-1, "向左"), row, nav(1, "向右"));
+  shelf.append(head, scroller);
+  box.appendChild(shelf);
+}
+function renderShelves(){
+  const box=document.getElementById("shelves");
+  box.innerHTML="";
+  const cont=videosFromIds(historyIds()).filter(v=>isInProgress(v.id));
+  if(cont.length) addShelf("繼續睇", cont, ()=>openLibrary("continue"));
+  const saved=videosFromIds(SAVED);
+  if(saved.length) addShelf("已儲存", saved, ()=>openLibrary("saved"));
+  catList().forEach(cat=>{
+    if(isCatLocked(cat)) return;
+    const vids=VIDEOS.filter(v=>v.cat===cat);
+    if(vids.length) addShelf(cat, vids, ()=>selectCat(cat));
+  });
+  if(!box.children.length){
+    const p=document.createElement("p");
+    p.className="empty";
+    p.textContent=VIDEOS.length && VIDEOS.every(v=>isCatLocked(v.cat)) ? "電視台鎖住咗，撳左邊先解鎖" : "未有可以播嘅片";
+    box.appendChild(p);
+  }
+}
+function openLibrary(mode){
+  blip();
+  viewMode=mode;
+  currentCat="__all__";
+  searchQuery="";
+  searchInput.value="";
+  closeSuggest();
+  showHome();
+  buildCats();
+  buildGrid();
+  closeDrawer();
+}
+function closeSuggest(){
+  suggestHi=-1;
+  if(suggestEl) suggestEl.classList.remove("show");
+}
+function paintSuggest(){
+  if(!suggestEl) return;
+  Array.prototype.forEach.call(suggestEl.children, (el, idx)=>el.classList.toggle("on", idx===suggestHi));
+}
+function renderSuggest(){
+  if(!suggestEl) return;
+  const q=searchQuery.trim().toLowerCase();
+  suggestEl.innerHTML="";
+  suggestHi=-1;
+  if(!q){ suggestEl.classList.remove("show"); return; }
+  const list=VIDEOS.filter(v=>!isCatLocked(v.cat) && (v.name+" "+v.cat).toLowerCase().includes(q)).slice(0, 8);
+  if(!list.length){ suggestEl.classList.remove("show"); return; }
+  list.forEach((v, idx)=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.setAttribute("role", "option");
+    const name=document.createElement("span");
+    name.textContent=v.name;
+    const cat=document.createElement("small");
+    cat.textContent=splitCat(v.cat).name;
+    b.append(name, cat);
+    b.addEventListener("mouseenter", ()=>{ suggestHi=idx; paintSuggest(); });
+    b.addEventListener("click", ()=>{
+      searchInput.value="";
+      searchQuery="";
+      closeSuggest();
+      playVideoObject(v);
+    });
+    suggestEl.appendChild(b);
+  });
+  suggestEl.classList.add("show");
+}
+function armDurFetch(){
+  if(durTimer || !apiReady) return;
+  durQueue=VIDEOS.map(v=>v.id).filter(id=>!knownDur(id));
+  if(!durQueue.length) return;
+  durTimer=setInterval(pumpDur, 700);
+}
+function pumpDur(){
+  if(!apiReady || durFails>=4){
+    if(durTimer){ clearInterval(durTimer); durTimer=0; }
+    return;
+  }
+  if(watchView.classList.contains("active") || inBedtime() || isLocked()) return;
+  if(player && player.getPlayerState){
+    const st=player.getPlayerState();
+    if(st===YT.PlayerState.PLAYING || st===YT.PlayerState.BUFFERING) return;
+  }
+  durQueue=durQueue.filter(id=>!knownDur(id));
+  if(!durQueue.length){
+    clearInterval(durTimer); durTimer=0;
+    if(durPlayer && durPlayer.stopVideo){ try{ durPlayer.stopVideo(); }catch(e){} }
+    return;
+  }
+  if(!durPlayer){
+    const holder=document.createElement("div");
+    holder.id="durProbe";
+    holder.setAttribute("aria-hidden", "true");
+    holder.style.cssText="position:fixed;left:-2400px;top:0;width:160px;height:90px;overflow:hidden;opacity:0;pointer-events:none";
+    document.body.appendChild(holder);
+    const first=durQueue[0];
+    durWait=first;
+    durTries=0;
+    durPlayer=new YT.Player("durProbe", {
+      width:160, height:90, videoId:first,
+      playerVars:{autoplay:0, controls:0, disablekb:1, mute:1, playsinline:1, rel:0, iv_load_policy:3, fs:0},
+      events:{ onReady:(e)=>{ try{ e.target.mute(); }catch(err){} } }
+    });
+    return;
+  }
+  if(!durPlayer.getDuration) return;
+  if(durWait!==durQueue[0]){
+    durWait=durQueue[0];
+    durTries=0;
+    try{ durPlayer.mute(); durPlayer.cueVideoById(durWait); }
+    catch(e){ durFails++; durWait=null; }
+    return;
+  }
+  durTries++;
+  try{
+    const vid=(durPlayer.getVideoData()||{}).video_id;
+    const d=durPlayer.getDuration()||0;
+    if(vid===durWait && d>1){
+      const id=durWait;
+      if(learnDur(id, d)) paintDurBadges();
+      durFails=0;
+      durQueue=durQueue.filter(x=>x!==id);
+      durWait=null;
+    }else if(durTries>12){
+      durFails++;
+      const skip=durWait;
+      durQueue=durQueue.filter(x=>x!==skip);
+      durWait=null;
+    }
+  }catch(e){}
+}
+function consumeHash(){
+  const m=(location.hash||"").match(/^#v=([A-Za-z0-9_-]{11})$/);
+  if(!m) return;
+  if(playingId===m[1] && watchView.classList.contains("active")) return;
+  const v=VIDEOS.find(x=>x.id===m[1]);
+  if(!v || isCatLocked(v.cat)) return;
+  playVideoObject(v);
+}
+
 
 function catList(){ return [...new Set(VIDEOS.map(v=>v.cat))]; }
 function isCatLocked(c){ return LOCKED_CATS.includes(c) && !unlockedCats.has(c); }
@@ -711,6 +1317,7 @@ function extractId(raw){
 
 function closeDrawer(){ document.body.classList.remove("drawer-open"); }
 function showHome(){
+  flushProgress();
   homeView.classList.add("active");
   watchView.classList.remove("active");
   document.title="寶寶電視";
@@ -718,6 +1325,7 @@ function showHome(){
   if(player && player.pauseVideo){ try{ player.pauseVideo(); }catch(e){} }
 }
 function showWatch(){
+  if(durPlayer && durPlayer.pauseVideo){ try{ durPlayer.pauseVideo(); }catch(e){} }
   homeView.classList.remove("active");
   watchView.classList.add("active");
   mainEl.scrollTop=0;
@@ -727,9 +1335,11 @@ function showWatch(){
 function selectCat(c){
   blip();
   const go=()=>{
+    viewMode="home";
     currentCat=c;
     searchQuery="";
     searchInput.value="";
+    closeSuggest();
     showHome();
     buildCats();
     buildGrid();
@@ -741,19 +1351,23 @@ function selectCat(c){
   }
   go();
 }
-
 function buildCats(){
   const cats=catList();
   if(currentCat!=="__all__" && (!cats.includes(currentCat) || isCatLocked(currentCat))) currentCat="__all__";
   const searching=searchQuery.trim().length>0;
-  sideHome.classList.toggle("active", currentCat==="__all__" && !searching);
-  sideHome.setAttribute("aria-current", sideHome.classList.contains("active")?"page":"false");
+  const homeOn=viewMode==="home" && currentCat==="__all__" && !searching;
+  sideHome.classList.toggle("active", homeOn);
+  sideHome.setAttribute("aria-current", homeOn?"page":"false");
+  sideContinue.classList.toggle("active", viewMode==="continue" && !searching);
+  sideHistory.classList.toggle("active", viewMode==="history" && !searching);
+  sideContinue.setAttribute("aria-current", sideContinue.classList.contains("active")?"page":"false");
+  sideHistory.setAttribute("aria-current", sideHistory.classList.contains("active")?"page":"false");
   catsEl.innerHTML="";
   sideCats.innerHTML="";
   const addChip=(label,value)=>{
     const b=document.createElement("button");
     b.type="button";
-    b.className="chip"+(!searching && currentCat===value?" active":"");
+    b.className="chip"+(!searching && viewMode==="home" && currentCat===value?" active":"");
     b.textContent=label;
     b.addEventListener("click",()=>selectCat(value));
     catsEl.appendChild(b);
@@ -765,7 +1379,7 @@ function buildCats(){
     addChip((locked?"🔒 ":"")+c, c);
     const b=document.createElement("button");
     b.type="button";
-    b.className="side-item"+(!searching && currentCat===c?" active":"");
+    b.className="side-item"+(!searching && viewMode==="home" && currentCat===c?" active":"");
     b.title=c;
     const ico=document.createElement("span");
     ico.className="side-ico";
@@ -778,11 +1392,11 @@ function buildCats(){
     sideCats.appendChild(b);
   });
 }
-
 function renderCard(v){
   const b=document.createElement("button");
   b.type="button";
   b.className="yt-card";
+  b.setAttribute("data-vid", v.id);
   const parts=splitCat(v.cat);
   const thumb=document.createElement("div");
   thumb.className="thumb";
@@ -795,6 +1409,7 @@ function renderCard(v){
     img.src="https://i.ytimg.com/vi/"+v.id+"/mqdefault.jpg";
   });
   thumb.appendChild(img);
+  decorateThumb(thumb, v);
   const meta=document.createElement("div");
   meta.className="meta";
   const av=document.createElement("div");
@@ -808,38 +1423,62 @@ function renderCard(v){
   title.textContent=v.name;
   const sub=document.createElement("div");
   sub.className="sub";
-  sub.textContent=v.cat;
-  const sub2=document.createElement("div");
-  sub2.className="sub";
-  sub2.textContent=watchedLabel(v.id);
-  text.append(title,sub,sub2);
-  meta.append(av,text);
-  b.append(thumb,meta);
+  sub.textContent=metaLine(v);
+  text.append(title, sub);
+  meta.append(av, text);
+  b.append(thumb, meta);
   b.addEventListener("click",()=>{ blip(); playVideoObject(v); });
   return b;
 }
-
 function buildGrid(){
-  grid.innerHTML="";
   const q=searchQuery.trim();
   const label=document.getElementById("resultLabel");
-  const list=browseVideos();
+  const useShelves=!q && viewMode==="home" && currentCat==="__all__";
+  homeView.classList.toggle("shelves-on", useShelves);
+  if(useShelves){
+    label.hidden=true;
+    grid.innerHTML="";
+    renderShelves();
+    return;
+  }
+  document.getElementById("shelves").innerHTML="";
+  grid.innerHTML="";
+  let list, emptyText;
   if(q){
+    list=browseVideos();
     label.hidden=false;
     label.textContent="「"+q+"」· "+list.length+" 條片";
-  }else label.hidden=true;
+    emptyText="片單入面冇呢個";
+  }else if(viewMode==="continue"){
+    list=videosFromIds(historyIds()).filter(v=>isInProgress(v.id));
+    label.hidden=false;
+    label.textContent="繼續睇";
+    emptyText="未有睇到一半嘅片";
+  }else if(viewMode==="history"){
+    list=videosFromIds(historyIds());
+    label.hidden=false;
+    label.textContent="已睇紀錄";
+    emptyText="未有睇過嘅片";
+  }else if(viewMode==="saved"){
+    list=videosFromIds(SAVED);
+    label.hidden=false;
+    label.textContent="已儲存";
+    emptyText="未有儲存嘅片";
+  }else{
+    list=browseVideos();
+    label.hidden=true;
+    if(currentCat==="__all__" && VIDEOS.length && VIDEOS.every(v=>isCatLocked(v.cat))) emptyText="電視台鎖住咗，撳左邊先解鎖";
+    else emptyText=currentCat==="__all__"?"未有可以播嘅片":"呢個台未有片";
+  }
   if(!list.length){
     const p=document.createElement("p");
     p.className="empty";
-    if(q) p.textContent="片單入面冇呢個";
-    else if(currentCat==="__all__" && VIDEOS.length && VIDEOS.every(v=>isCatLocked(v.cat))) p.textContent="電視台鎖住咗，撳左邊先解鎖";
-    else p.textContent=currentCat==="__all__"?"未有可以播嘅片":"呢個台未有片";
+    p.textContent=emptyText;
     grid.appendChild(p);
     return;
   }
   list.forEach(v=>grid.appendChild(renderCard(v)));
 }
-
 function renderWatch(list,i){
   const v=list[i];
   if(!v) return;
@@ -849,13 +1488,15 @@ function renderWatch(list,i){
   const av=document.getElementById("watchAvatar");
   av.textContent=parts.icon;
   av.style.background=avatarBg(v.cat);
-  document.getElementById("watchDesc").textContent="播完會自動播「"+parts.name+"」下一條，循環播放，唔會出 YouTube 推薦。";
+  paintWatchActions(v);
+  paintDesc(v, list);
   const box=document.getElementById("upnext");
   box.innerHTML="";
   list.forEach((item,k)=>{
     const b=document.createElement("button");
     b.type="button";
     b.className="up-item"+(k===i?" active":"");
+    b.setAttribute("data-vid", item.id);
     const thumb=document.createElement("div");
     thumb.className="up-thumb";
     const img=document.createElement("img");
@@ -867,22 +1508,23 @@ function renderWatch(list,i){
       tag.className="now-tag";
       tag.textContent="正在播放";
       thumb.appendChild(tag);
-    }
+    }else decorateThumb(thumb, item);
     const text=document.createElement("div");
     const title=document.createElement("div");
     title.className="up-title";
     title.textContent=item.name;
     const sub=document.createElement("div");
     sub.className="up-sub";
-    sub.textContent=item.cat;
+    sub.textContent=metaLine(item);
     text.append(title,sub);
     b.append(thumb,text);
     b.addEventListener("click",()=>{ blip(); playIndex(k); });
     box.appendChild(b);
   });
 }
-
 function playVideoObject(v){
+  stopMic();
+  closeSuggest();
   if(isCatLocked(v.cat)){
     openPw("解鎖「"+v.cat+"」",()=>{
       unlockedCats.add(v.cat);
@@ -904,38 +1546,48 @@ function onYouTubeIframeAPIReady(){
   if(pendingIdx!==null){
     const i=pendingIdx; pendingIdx=null; playIndex(i);
   }
+  if(durWanted) armDurFetch();
 }
 
 function mountOrLoad(id){
+  const start=startSecondsFor(id);
   if(player && player.loadVideoById){
-    player.loadVideoById(id);
+    player.loadVideoById({videoId:id, startSeconds:start});
     try{ player.playVideo(); }catch(e){}
     return;
   }
   if(!document.getElementById("player")) return;
   player=new YT.Player("player",{
     videoId:id,
-    playerVars:{autoplay:1,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3},
+    playerVars:{autoplay:1,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,start:start},
     events:{
       onReady:(e)=>{ try{ e.target.playVideo(); }catch(err){} },
       onStateChange:(e)=>{
+        if(e.data===YT.PlayerState.PAUSED) flushProgress();
         if(e.data===YT.PlayerState.ENDED){
+          flushProgress(true);
+          hideNext();
           const q=queueVideos();
-          if(!q.length) return;
+          if(!q.length || nextCancelled) return;
           playIndex((currentIdx+1)%q.length);
         }
       }
     }
   });
 }
-
 function playIndex(i){
   if(inBedtime()){ showBed(); return; }
   if(isLocked()){ showLock(); return; }
   const list=queueVideos();
   if(!list[i]) return;
+  flushProgress();
+  stopMic();
+  closeSuggest();
+  nextCancelled=false;
+  hideNext();
   currentIdx=i;
   playingId=list[i].id;
+  touchHist(playingId);
   const id=list[i].id;
   const token=++playToken;
   showWatch();
@@ -946,7 +1598,6 @@ function playIndex(i){
   if(token!==playToken) return;
   mountOrLoad(id);
 }
-
 function syncPlaybackAfterEdit(){
   if(!playingId) return;
   const v=VIDEOS.find(x=>x.id===playingId);
@@ -987,11 +1638,13 @@ setInterval(()=>{
     if(list[currentIdx]){ STAT_VIDS[list[currentIdx].id]=(STAT_VIDS[list[currentIdx].id]||0)+5; }
     trimStats();
     store.set("statDays",STAT_DAYS); store.set("statVids",STAT_VIDS);
+    flushProgress();
     if(inBedtime()){ player.pauseVideo(); showBed(); }
     else if(isLocked()){ player.pauseVideo(); showLock(); }
   }
   updateTimeLabel();
 },5000);
+setInterval(tickNext, 1000);
 
 const timeLeftEl=document.getElementById("timeLeft");
 function updateTimeLabel(){
@@ -1066,6 +1719,58 @@ document.getElementById("gearBtn").addEventListener("click",()=>{ blip(); closeD
 document.getElementById("sideSettings").addEventListener("click",()=>{ blip(); closeDrawer(); openPw("家長密碼",openSettings); });
 document.getElementById("brandHome").addEventListener("click",()=>selectCat("__all__"));
 document.getElementById("sideHome").addEventListener("click",()=>selectCat("__all__"));
+sideContinue.addEventListener("click",()=>openLibrary("continue"));
+sideHistory.addEventListener("click",()=>openLibrary("history"));
+document.getElementById("subBtn").addEventListener("click", ()=>{
+  const v=currentVideo(); if(!v) return;
+  blip();
+  const i=SUBS.indexOf(v.cat);
+  if(i>=0) SUBS.splice(i,1); else SUBS.push(v.cat);
+  store.set("subs", SUBS);
+  paintWatchActions(v);
+});
+document.getElementById("likeBtn").addEventListener("click", ()=>{
+  const v=currentVideo(); if(!v) return;
+  blip();
+  if(REACT[v.id]==="like") delete REACT[v.id];
+  else REACT[v.id]="like";
+  store.set("react", REACT);
+  paintWatchActions(v);
+});
+document.getElementById("dislikeBtn").addEventListener("click", ()=>{
+  const v=currentVideo(); if(!v) return;
+  blip();
+  if(REACT[v.id]==="dislike") delete REACT[v.id];
+  else REACT[v.id]="dislike";
+  store.set("react", REACT);
+  paintWatchActions(v);
+});
+document.getElementById("saveBtn").addEventListener("click", ()=>{
+  const v=currentVideo(); if(!v) return;
+  blip();
+  const i=SAVED.indexOf(v.id);
+  if(i>=0) SAVED.splice(i,1); else SAVED.unshift(v.id);
+  store.set("saved", SAVED);
+  paintWatchActions(v);
+});
+document.getElementById("shareBtn").addEventListener("click", ()=>{ shareCurrent(); });
+document.getElementById("watchDesc").addEventListener("click", ()=>{
+  const box=document.getElementById("watchDesc");
+  const open=box.classList.toggle("open");
+  document.getElementById("descMore").textContent=open?"收起":"更多";
+  box.setAttribute("aria-expanded", open?"true":"false");
+});
+document.getElementById("nextCancel").addEventListener("click", ()=>{
+  nextCancelled=true;
+  hideNext();
+});
+document.getElementById("nextGo").addEventListener("click", ()=>{
+  const q=queueVideos();
+  if(!q.length) return;
+  blip();
+  nextCancelled=false;
+  playIndex((currentIdx+1)%q.length);
+});
 document.getElementById("menuBtn").addEventListener("click",()=>{
   if(window.matchMedia("(max-width: 799px)").matches) document.body.classList.toggle("drawer-open");
   else document.body.classList.toggle("mini");
@@ -1075,6 +1780,7 @@ window.addEventListener("resize",()=>{ if(window.innerWidth>=800) closeDrawer();
 
 document.getElementById("searchForm").addEventListener("submit",e=>{
   e.preventDefault();
+  closeSuggest();
   searchInput.blur();
 });
 searchInput.addEventListener("input",()=>{
@@ -1082,6 +1788,68 @@ searchInput.addEventListener("input",()=>{
   if(watchView.classList.contains("active")) showHome();
   buildCats();
   buildGrid();
+  renderSuggest();
+});
+searchInput.addEventListener("keydown", e=>{
+  if(e.isComposing) return;
+  const open=suggestEl.classList.contains("show");
+  const n=suggestEl.children.length;
+  if(e.key==="ArrowDown" && open){
+    e.preventDefault();
+    suggestHi=Math.min(n-1, suggestHi+1);
+    paintSuggest();
+  }else if(e.key==="ArrowUp" && open){
+    e.preventDefault();
+    suggestHi=Math.max(-1, suggestHi-1);
+    paintSuggest();
+  }else if(e.key==="Enter" && open && suggestHi>=0){
+    e.preventDefault();
+    suggestEl.children[suggestHi].click();
+  }else if(e.key==="Escape"){
+    closeSuggest();
+  }
+});
+suggestEl.addEventListener("mousedown", e=>e.preventDefault());
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".search-wrap")) closeSuggest();
+});
+micBtn.addEventListener("click", ()=>{
+  const SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast("呢個瀏覽器未支援語音搜尋"); return; }
+  if(rec){ stopMic(); return; }
+  try{ rec=new SR(); }
+  catch(e){ rec=null; toast("語音搜尋開唔到"); return; }
+  rec.lang="zh-HK";
+  rec.interimResults=true;
+  rec.continuous=false;
+  rec.onresult=(ev)=>{
+    let said="";
+    for(let i=0;i<ev.results.length;i++) said+=ev.results[i][0].transcript;
+    searchInput.value=said;
+    searchQuery=said;
+    if(watchView.classList.contains("active")) showHome();
+    buildCats();
+    buildGrid();
+    renderSuggest();
+  };
+  rec.onerror=(ev)=>{
+    const code=ev && ev.error;
+    if(code==="not-allowed") toast("請允許用麥克風");
+    else if(code==="no-speech") toast("聽唔到聲");
+    else if(code && code!=="aborted") toast("語音搜尋開唔到");
+  };
+  rec.onend=()=>{
+    rec=null;
+    micBtn.classList.remove("live");
+  };
+  try{
+    rec.start();
+    micBtn.classList.add("live");
+  }catch(e){
+    rec=null;
+    micBtn.classList.remove("live");
+    toast("語音搜尋開唔到");
+  }
 });
 
 const vlist=document.getElementById("vlist");
@@ -1251,6 +2019,9 @@ buildCats();
 buildGrid();
 if(inBedtime()) showBed();
 else if(isLocked()) showLock();
+consumeHash();
+window.addEventListener("hashchange", consumeHash);
+document.addEventListener("pointerdown", ()=>{ durWanted=true; armDurFetch(); }, {once:true});
 </script>
 </body>
 </html>
