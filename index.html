@@ -263,7 +263,7 @@
   .sheet .big-emoji{font-size:60px;text-align:center;display:block;margin-bottom:12px}
   .sheet p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:16px}
   .sheet input[type=text],.sheet input[type=password],.sheet input[type=number],
-  .sheet input[type=time],.sheet textarea{
+  .sheet input[type=email],.sheet input[type=time],.sheet textarea{
     width:100%;background:var(--input-bg);border:1px solid var(--search-border);
     border-radius:8px;padding:12px;font-size:16px;margin-bottom:12px;
   }
@@ -540,6 +540,16 @@
   </main>
 </div>
 
+<div class="overlay" id="cloudChoice">
+  <div class="sheet">
+    <h2>呢部機的片單同全家唔同</h2>
+    <p>未決定之前，呢部機繼續播自己原本的片單。用全家片單會放棄呢部機改過的片。上傳要登入家長雲端帳戶。</p>
+    <button class="btn" id="cloudUseRemote" type="button" style="width:100%;margin-bottom:8px">用全家片單</button>
+    <button class="btn ghost" id="cloudUseDevice" type="button" style="width:100%;margin-bottom:8px">將呢部機的片單變成全家片單</button>
+    <button class="btn ghost" id="cloudKeep" type="button" style="width:100%">繼續睇，下次再問</button>
+  </div>
+</div>
+
 <div class="overlay" id="lockOverlay">
   <div class="sheet">
     <span class="big-emoji">🌙</span>
@@ -581,6 +591,20 @@
 <div class="overlay" id="setOverlay">
   <div class="sheet">
     <h2>家長設定</h2>
+
+    <div id="cloudPanel" hidden>
+      <h3>全家片單</h3>
+      <p id="cloudStatus">未登入。儲存只留喺呢部機。</p>
+      <div id="cloudLoginBox">
+        <span class="field-label">家長電郵</span>
+        <input type="email" id="cloudEmail" autocomplete="username" inputmode="email">
+        <span class="field-label">雲端密碼</span>
+        <input type="password" id="cloudPass" autocomplete="current-password">
+        <button class="btn" id="cloudLoginBtn" type="button" style="width:100%">登入</button>
+      </div>
+      <button class="btn ghost" id="cloudLogoutBtn" type="button" style="width:100%" hidden>登出雲端</button>
+      <hr class="divider">
+    </div>
 
     <h3>外觀</h3>
     <div class="theme-picks" id="themePicks" role="group" aria-label="外觀">
@@ -624,7 +648,7 @@
     <hr class="divider">
 
     <h3>備份 / 同步</h3>
-    <p style="margin-bottom:8px;font-size:13px">「匯出」產生一段同步碼，喺另一部裝置貼上「匯入」，片單同設定即刻搬過去。</p>
+    <p style="margin-bottom:8px;font-size:13px">同步碼係離線備份。匯入只改呢部機；登入咗雲端先會一併寫入全家片單。</p>
     <button class="btn ghost" id="exportBtn" type="button" style="width:100%">匯出同步碼</button>
     <textarea id="syncCode" placeholder="同步碼會喺度顯示，或者貼入嚟匯入"></textarea>
     <button class="btn ghost" id="importBtn" type="button" style="width:100%">匯入同步碼</button>
@@ -1970,6 +1994,13 @@ const store = {
   get(k, fb){ try{ const v = localStorage.getItem("btv_"+k); return v===null?fb:JSON.parse(v);}catch(e){return fb} },
   set(k, v){ try{ localStorage.setItem("btv_"+k, JSON.stringify(v)); }catch(e){} }
 };
+const LOCAL_SAVED = store.get("videos", null)!==null
+  || store.get("limit", null)!==null
+  || store.get("limitWd", null)!==null
+  || store.get("limitWe", null)!==null
+  || store.get("bed", null)!==null
+  || store.get("lockedCats", null)!==null
+  || store.get("snd", null)!==null;
 
 let VIDEOS   = store.get("videos", DEFAULT_VIDEOS).map(v=>({cat:v.cat||"📺 節目台",name:v.name,id:v.id}));
 function ensurePacks(){
@@ -3331,6 +3362,7 @@ function openSettings(){
   document.getElementById("setMsg").textContent="";
   renderLockCats();
   renderStats();
+  paintCloudStatus();
   document.getElementById("setOverlay").classList.add("show");
 }
 document.getElementById("setCancel").addEventListener("click",()=>document.getElementById("setOverlay").classList.remove("show"));
@@ -3354,7 +3386,7 @@ document.getElementById("exportBtn").addEventListener("click",()=>{
   const m=document.getElementById("setMsg");
   m.textContent="同步碼已產生（已嘗試複製）✓"; m.className="msg ok";
 });
-document.getElementById("importBtn").addEventListener("click",()=>{
+document.getElementById("importBtn").addEventListener("click",async ()=>{
   const m=document.getElementById("setMsg");
   const raw=document.getElementById("syncCode").value.trim();
   if(!raw.startsWith("BTV1.")){ m.textContent="同步碼格式唔啱"; m.className="msg err"; return; }
@@ -3373,14 +3405,317 @@ document.getElementById("importBtn").addEventListener("click",()=>{
     unlockedCats.clear();
     buildCats(); buildGrid(); updateTimeLabel(); syncPlaybackAfterEdit();
     openSettings();
-    document.getElementById("setMsg").textContent="匯入成功 ✓";
-    document.getElementById("setMsg").className="msg ok";
+    const done=document.getElementById("setMsg");
+    if(!cloudOn()){
+      done.textContent="匯入成功 ✓";
+      done.className="msg ok";
+      return;
+    }
+    const token=await ensureToken();
+    if(!token){
+      done.textContent="已匯入呢部機。未登入，未蓋過全家片單。";
+      done.className="msg ok";
+      return;
+    }
+    try{
+      await pushShared(VIDEOS, householdFromState());
+      store.set("cloudPick","cloud");
+      done.textContent="匯入成功，並已寫入全家片單 ✓";
+      done.className="msg ok";
+    }catch(err){
+      done.textContent="已匯入呢部機，但雲端寫入失敗";
+      done.className="msg err";
+    }
   }catch(e){
     m.textContent="同步碼解讀失敗，請檢查有冇貼漏"; m.className="msg err";
   }
 });
 
-document.getElementById("setSave").addEventListener("click",()=>{
+const CLOUD = { url: "", anon: "" };
+let pendingCloud = null;
+let wantUpload = false;
+
+function cloudOn(){ return !!(CLOUD.url && CLOUD.anon); }
+function normVideos(list){
+  return (Array.isArray(list)?list:[]).map(v=>({
+    cat: String((v && v.cat) || "📺 節目台"),
+    name: String((v && v.name) || ""),
+    id: String((v && (v.id || v.youtube_id)) || "")
+  }));
+}
+function sameVideos(a, b){
+  if(a.length!==b.length) return false;
+  for(let i=0;i<a.length;i++){
+    if(a[i].cat!==b[i].cat || a[i].name!==b[i].name || a[i].id!==b[i].id) return false;
+  }
+  return true;
+}
+function householdFromState(){
+  return {
+    limit_wd: LIMIT_WD|0,
+    limit_we: LIMIT_WE|0,
+    bed_on: !!BED.on,
+    bed_start: BED.start || "20:00",
+    bed_end: BED.end || "07:00",
+    locked_cats: Array.isArray(LOCKED_CATS) ? LOCKED_CATS.slice() : [],
+    sound: SND!==false
+  };
+}
+function normHouse(h){
+  const locked = Array.isArray(h && h.locked_cats) ? h.locked_cats.map(String).sort() : [];
+  return {
+    limit_wd: (h && h.limit_wd) | 0,
+    limit_we: (h && h.limit_we) | 0,
+    bed_on: !!(h && h.bed_on),
+    bed_start: (h && h.bed_start) || "20:00",
+    bed_end: (h && h.bed_end) || "07:00",
+    locked: locked.join("\n"),
+    sound: !h || h.sound!==false
+  };
+}
+function sameHouse(a, b){
+  const x=normHouse(a), y=normHouse(b);
+  return x.limit_wd===y.limit_wd && x.limit_we===y.limit_we && x.bed_on===y.bed_on
+    && x.bed_start===y.bed_start && x.bed_end===y.bed_end && x.locked===y.locked && x.sound===y.sound;
+}
+function cloudBase(){ return String(CLOUD.url||"").replace(/\/$/,""); }
+async function cloudRequest(path, opts){
+  const res = await fetch(cloudBase()+path, opts||{});
+  const text = await res.text();
+  if(!res.ok) throw new Error(String(res.status));
+  if(!text) return null;
+  return JSON.parse(text);
+}
+function saveCloudSession(data, email){
+  store.set("cloudAuth", {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: data.expires_at || Math.floor(Date.now()/1000)+(data.expires_in||3600),
+    email: email || (data.user && data.user.email) || ""
+  });
+}
+async function ensureToken(){
+  if(!cloudOn()) return null;
+  const s = store.get("cloudAuth", null);
+  if(!s || !s.access_token || !s.refresh_token) return null;
+  if(!s.expires_at || s.expires_at-60 > Date.now()/1000) return s.access_token;
+  try{
+    const data = await cloudRequest("/auth/v1/token?grant_type=refresh_token", {
+      method:"POST",
+      headers:{ apikey:CLOUD.anon, "Content-Type":"application/json" },
+      body: JSON.stringify({ refresh_token:s.refresh_token })
+    });
+    if(!data || !data.access_token) throw new Error("refresh");
+    saveCloudSession(data, s.email);
+    return data.access_token;
+  }catch(e){
+    store.set("cloudAuth", null);
+    return null;
+  }
+}
+async function loginCloud(email, password){
+  const data = await cloudRequest("/auth/v1/token?grant_type=password", {
+    method:"POST",
+    headers:{ apikey:CLOUD.anon, "Content-Type":"application/json" },
+    body: JSON.stringify({ email:email, password:password })
+  });
+  if(!data || !data.access_token) throw new Error("login");
+  saveCloudSession(data, email);
+}
+async function logoutCloud(){
+  const s = store.get("cloudAuth", null);
+  store.set("cloudAuth", null);
+  paintCloudStatus();
+  if(!s || !s.access_token || !cloudOn()) return;
+  try{
+    await fetch(cloudBase()+"/auth/v1/logout", {
+      method:"POST",
+      headers:{ apikey:CLOUD.anon, Authorization:"Bearer "+s.access_token, "Content-Type":"application/json" }
+    });
+  }catch(e){}
+}
+function authHeaders(token){
+  return {
+    apikey: CLOUD.anon,
+    Authorization: "Bearer "+token,
+    "Content-Type":"application/json",
+    Accept:"application/json"
+  };
+}
+async function pushShared(videos, house){
+  const token = await ensureToken();
+  if(!token) throw new Error("login");
+  const seen = new Set();
+  const rows = [];
+  normVideos(videos).forEach(v=>{
+    if(!/^[A-Za-z0-9_-]{11}$/.test(v.id) || !v.name || !v.cat || seen.has(v.id)) return;
+    seen.add(v.id);
+    rows.push({ youtube_id:v.id, cat:v.cat.slice(0,80), name:v.name.slice(0,300), position:rows.length });
+  });
+  if(!rows.length) throw new Error("empty");
+  await cloudRequest("/rest/v1/rpc/replace_catalog", {
+    method:"POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ rows:rows })
+  });
+  await cloudRequest("/rest/v1/household?id=eq.1", {
+    method:"PATCH",
+    headers: Object.assign(authHeaders(token), { Prefer:"return=minimal" }),
+    body: JSON.stringify({
+      limit_wd: Math.max(0, Math.min(600, house.limit_wd|0)),
+      limit_we: Math.max(0, Math.min(600, house.limit_we|0)),
+      bed_on: !!house.bed_on,
+      bed_start: house.bed_start || "20:00",
+      bed_end: house.bed_end || "07:00",
+      locked_cats: Array.isArray(house.locked_cats) ? house.locked_cats : [],
+      sound: house.sound!==false,
+      updated_at: new Date().toISOString()
+    })
+  });
+}
+function refreshGates(){
+  if(inBedtime()){
+    showBed();
+    document.getElementById("lockOverlay").classList.remove("show");
+    return;
+  }
+  document.getElementById("bedOverlay").classList.remove("show");
+  if(isLocked()) showLock();
+  else document.getElementById("lockOverlay").classList.remove("show");
+}
+function applyShared(videos, house){
+  VIDEOS = normVideos(videos);
+  LIMIT_WD = Math.max(0, Math.min(600, house.limit_wd|0));
+  LIMIT_WE = Math.max(0, Math.min(600, house.limit_we|0));
+  BED = { on:!!house.bed_on, start:house.bed_start||"20:00", end:house.bed_end||"07:00" };
+  LOCKED_CATS = Array.isArray(house.locked_cats) ? house.locked_cats.map(String) : [];
+  SND = house.sound!==false;
+  store.set("videos", VIDEOS);
+  store.set("limitWd", LIMIT_WD);
+  store.set("limitWe", LIMIT_WE);
+  store.set("bed", BED);
+  store.set("lockedCats", LOCKED_CATS);
+  store.set("snd", SND);
+  unlockedCats.clear();
+  buildCats();
+  buildGrid();
+  updateTimeLabel();
+  syncPlaybackAfterEdit();
+  if(document.getElementById("setOverlay").classList.contains("show")) openSettings();
+  refreshGates();
+}
+function paintCloudStatus(){
+  const panel = document.getElementById("cloudPanel");
+  if(!panel) return;
+  if(!cloudOn()){ panel.hidden = true; return; }
+  panel.hidden = false;
+  const s = store.get("cloudAuth", null);
+  const logged = !!(s && s.access_token);
+  document.getElementById("cloudLoginBox").hidden = logged;
+  document.getElementById("cloudLogoutBtn").hidden = !logged;
+  const st = document.getElementById("cloudStatus");
+  if(logged){
+    st.textContent = "已登入 "+(s.email||"")+"。儲存會寫入全家片單。";
+    st.className = "msg ok";
+  }else{
+    st.textContent = "未登入。而家儲存只留喺呢部機，其他裝置唔會跟。";
+    st.className = "msg";
+  }
+  const email = document.getElementById("cloudEmail");
+  if(email && !email.value && s && s.email) email.value = s.email;
+}
+async function pullCloud(){
+  if(!cloudOn()) return;
+  try{
+    const headers = { apikey:CLOUD.anon, Authorization:"Bearer "+CLOUD.anon, Accept:"application/json" };
+    const videos = await cloudRequest("/rest/v1/videos?select=youtube_id,cat,name,position&order=position.asc", { headers:headers });
+    const houses = await cloudRequest("/rest/v1/household?id=eq.1&select=limit_wd,limit_we,bed_on,bed_start,bed_end,locked_cats,sound", { headers:headers });
+    if(!Array.isArray(videos) || !videos.length || !Array.isArray(houses) || !houses.length) return;
+    const remoteVideos = videos.map(v=>({ cat:v.cat, name:v.name, id:v.youtube_id }));
+    const house = houses[0];
+    const differ = !sameVideos(normVideos(VIDEOS), normVideos(remoteVideos)) || !sameHouse(householdFromState(), house);
+    const pick = store.get("cloudPick", null);
+    if(!differ){
+      if(pick!=="cloud") store.set("cloudPick","cloud");
+      return;
+    }
+    if(!LOCAL_SAVED || pick==="cloud"){
+      applyShared(remoteVideos, house);
+      store.set("cloudPick","cloud");
+      return;
+    }
+    if(pick==="device") return;
+    pendingCloud = { videos:remoteVideos, house:house };
+    document.getElementById("cloudChoice").classList.add("show");
+  }catch(e){}
+}
+document.getElementById("cloudKeep").addEventListener("click", ()=>{
+  document.getElementById("cloudChoice").classList.remove("show");
+});
+document.getElementById("cloudUseRemote").addEventListener("click", ()=>{
+  openPw("用全家片單", ()=>{
+    if(!pendingCloud) return;
+    applyShared(pendingCloud.videos, pendingCloud.house);
+    store.set("cloudPick","cloud");
+    pendingCloud = null;
+    document.getElementById("cloudChoice").classList.remove("show");
+  });
+});
+document.getElementById("cloudUseDevice").addEventListener("click", ()=>{
+  openPw("上傳呢部機的片單", ()=>{
+    document.getElementById("cloudChoice").classList.remove("show");
+    store.set("cloudPick","device");
+    wantUpload = true;
+    openSettings();
+    ensureToken().then(async token=>{
+      const m = document.getElementById("setMsg");
+      if(!token){
+        m.textContent = "請登入雲端。登入後會將呢部機的片單變成全家片單。";
+        m.className = "msg err";
+        const email = document.getElementById("cloudEmail");
+        if(email) email.focus();
+        return;
+      }
+      try{
+        await pushShared(VIDEOS, householdFromState());
+        store.set("cloudPick","cloud");
+        wantUpload = false;
+        m.textContent = "已將呢部機的片單寫成全家片單 ✓";
+        m.className = "msg ok";
+        paintCloudStatus();
+      }catch(e){
+        m.textContent = "上傳失敗。登入後再按儲存。";
+        m.className = "msg err";
+      }
+    });
+  });
+});
+document.getElementById("cloudLoginBtn").addEventListener("click", async ()=>{
+  const m = document.getElementById("setMsg");
+  const email = document.getElementById("cloudEmail").value.trim();
+  const password = document.getElementById("cloudPass").value;
+  if(!email || !password){ m.textContent="請填電郵同雲端密碼"; m.className="msg err"; return; }
+  try{
+    await loginCloud(email, password);
+    document.getElementById("cloudPass").value = "";
+    paintCloudStatus();
+    if(wantUpload){
+      await pushShared(VIDEOS, householdFromState());
+      store.set("cloudPick","cloud");
+      wantUpload = false;
+      m.textContent = "已登入，並將呢部機的片單寫成全家片單 ✓";
+    }else{
+      m.textContent = "已登入 ✓";
+    }
+    m.className = "msg ok";
+  }catch(e){
+    m.textContent = "登入失敗，請檢查電郵同密碼";
+    m.className = "msg err";
+  }
+});
+document.getElementById("cloudLogoutBtn").addEventListener("click", ()=>{ logoutCloud(); });
+
+document.getElementById("setSave").addEventListener("click",async ()=>{
   snapshotDraftFromDom();
   const list=[]; let bad=false;
   draftVideos.forEach(v=>{
@@ -3397,8 +3732,8 @@ document.getElementById("setSave").addEventListener("click",()=>{
   if(list.length===0){ msg.textContent="至少要有一條片"; msg.className="msg err"; return; }
 
   VIDEOS=list; store.set("videos",VIDEOS);
-  LIMIT_WD=Math.max(0,parseInt(document.getElementById("setLimitWd").value)||0);
-  LIMIT_WE=Math.max(0,parseInt(document.getElementById("setLimitWe").value)||0);
+  LIMIT_WD=Math.max(0, Math.min(600, parseInt(document.getElementById("setLimitWd").value)||0));
+  LIMIT_WE=Math.max(0, Math.min(600, parseInt(document.getElementById("setLimitWe").value)||0));
   store.set("limitWd",LIMIT_WD); store.set("limitWe",LIMIT_WE);
   BED={
     on:document.getElementById("bedOn").checked,
@@ -3415,8 +3750,28 @@ document.getElementById("setSave").addEventListener("click",()=>{
   if(npw){ PASSWORD=npw; store.set("pw",PASSWORD); }
   unlockedCats.clear();
   buildCats(); buildGrid(); updateTimeLabel(); syncPlaybackAfterEdit();
-  msg.textContent="已儲存 ✓"; msg.className="msg ok";
-  setTimeout(()=>document.getElementById("setOverlay").classList.remove("show"),700);
+  if(!cloudOn()){
+    msg.textContent="已儲存 ✓"; msg.className="msg ok";
+    setTimeout(()=>document.getElementById("setOverlay").classList.remove("show"),700);
+    return;
+  }
+  const token=await ensureToken();
+  if(!token){
+    msg.textContent="已儲存呢部機。未登入雲端，未寫入全家片單。";
+    msg.className="msg err";
+    return;
+  }
+  try{
+    await pushShared(VIDEOS, householdFromState());
+    store.set("cloudPick","cloud");
+    wantUpload=false;
+    msg.textContent="已儲存，其他裝置下次打開會跟到 ✓";
+    msg.className="msg ok";
+    setTimeout(()=>document.getElementById("setOverlay").classList.remove("show"),900);
+  }catch(err){
+    msg.textContent="呢部機已儲存，但雲端寫入失敗。請再試。";
+    msg.className="msg err";
+  }
 });
 
 const themeMq=window.matchMedia("(prefers-color-scheme: dark)");
@@ -3427,6 +3782,7 @@ buildGrid();
 if(inBedtime()) showBed();
 else if(isLocked()) showLock();
 consumeHash();
+pullCloud();
 window.addEventListener("hashchange", consumeHash);
 document.addEventListener("pointerdown", ()=>{ durWanted=true; armDurFetch(); }, {once:true});
 </script>
