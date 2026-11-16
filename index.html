@@ -5,244 +5,407 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="寶寶電視">
-<meta name="theme-color" content="#14203a">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <title>寶寶電視</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#14203a; --card:#1f3054; --card-edge:#2c4270;
-    --text:#f2f5fa; --text-dim:#93a5c4;
-    --sun:#ffd166; --danger:#ff6b6b; --ok:#51cf8a;
+    color-scheme:light;
+    --bg:#fff; --bg-soft:#f2f2f2; --text:#0f0f0f; --muted:#606060;
+    --line:#e5e5e5; --chip:#f2f2f2; --chip-hover:#e5e5e5;
+    --header:#fff; --search-border:#ccc; --search-btn:#f8f8f8;
+    --hover:#f2f2f2; --overlay:rgba(0,0,0,.55); --input-bg:#fff;
+    --danger:#c00; --ok:#0d7a32; --red:#ff0000;
+    --header-h:calc(56px + env(safe-area-inset-top));
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      color-scheme:dark;
+      --bg:#0f0f0f; --bg-soft:#272727; --text:#f1f1f1; --muted:#aaa;
+      --line:#3f3f3f; --chip:#272727; --chip-hover:#3f3f3f;
+      --header:#0f0f0f; --search-border:#303030; --search-btn:#222;
+      --hover:rgba(255,255,255,.1); --overlay:rgba(0,0,0,.72); --input-bg:#121212;
+      --danger:#ff6b6b; --ok:#3dd68c;
+    }
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
     background:var(--bg);color:var(--text);
-    font-family:"PingFang HK","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
-    display:flex;flex-direction:column;overscroll-behavior:none;
+    font-family:Roboto,"Noto Sans TC","PingFang HK","Microsoft JhengHei",Arial,sans-serif;
+    display:flex;flex-direction:column;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
   }
-  header{
-    display:flex;align-items:center;gap:10px;
-    padding:calc(10px + env(safe-area-inset-top)) 18px 10px;flex-shrink:0;
-  }
-  header .logo{font-size:26px;user-select:none;-webkit-user-select:none}
-  header h1{font-size:19px;font-weight:800}
-  header .timeleft{
-    margin-left:auto;font-size:13px;color:var(--text-dim);
-    background:var(--card);border:1px solid var(--card-edge);
-    border-radius:999px;padding:5px 12px;
-  }
-  header .timeleft.warn{color:var(--sun)}
-  .gearbtn{
-    background:var(--card);border:1px solid var(--card-edge);
-    border-radius:50%;width:38px;height:38px;
-    font-size:18px;line-height:1;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .gearbtn:active{transform:scale(.92)}
-  .gearbtn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+  button,input,textarea{font-family:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid #1c62b9;outline-offset:2px}
 
-  .stage{flex-shrink:0;padding:0 14px}
-  .frame-wrap{
-    width:100%;max-width:900px;margin:0 auto;
-    aspect-ratio:16/9;background:#000;
-    border-radius:16px;overflow:hidden;position:relative;
-    box-shadow:0 10px 30px rgba(0,0,0,.45);
+  .yt-header{
+    flex-shrink:0;height:var(--header-h);
+    padding:env(safe-area-inset-top) 16px 0 8px;
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;gap:12px;background:var(--header);
   }
+  .left,.right{display:flex;align-items:center;gap:4px;min-width:0}
+  .right{gap:8px;padding-right:4px}
+  .icon-btn,.avatar-btn{
+    width:40px;height:40px;border:0;border-radius:50%;
+    background:transparent;color:var(--text);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .icon-btn:hover,.avatar-btn:hover,.brand:hover{background:var(--hover)}
+  .brand{
+    display:flex;align-items:center;gap:6px;
+    border:0;background:transparent;border-radius:10px;
+    padding:6px 10px 6px 4px;color:var(--text);
+    font-weight:700;font-size:20px;letter-spacing:-.4px;
+  }
+  .brand-mark{
+    width:32px;height:32px;border-radius:50%;background:var(--red);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .brand-mark svg{margin-left:2px}
+  .search{display:flex;align-items:center;width:100%;max-width:640px;margin:0 auto;min-width:0}
+  .search input{
+    flex:1;min-width:0;height:40px;border:1px solid var(--search-border);border-right:0;
+    border-radius:40px 0 0 40px;padding:0 4px 0 16px;background:var(--header);
+    font-size:16px;outline:none;
+  }
+  .search input::placeholder{color:var(--muted)}
+  .search input:focus{border-color:#1c62b9;box-shadow:inset 0 0 0 1px #1c62b9}
+  .search-go{
+    width:64px;height:40px;border:1px solid var(--search-border);
+    border-radius:0 40px 40px 0;background:var(--search-btn);color:var(--text);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .search-go:hover{background:var(--chip-hover)}
+  .time-chip{
+    font-size:13px;font-weight:500;color:var(--muted);
+    background:var(--bg-soft);border-radius:999px;padding:6px 10px;white-space:nowrap;
+  }
+  .time-chip.warn{color:#fff;background:var(--red)}
+
+  .app{flex:1;display:flex;min-height:0}
+  .sidebar{
+    width:240px;flex-shrink:0;overflow-y:auto;padding:12px 0 24px;
+    background:var(--bg);
+  }
+  .sidebar::-webkit-scrollbar{width:8px}
+  .sidebar::-webkit-scrollbar-thumb{background:transparent;border-radius:8px}
+  .sidebar:hover::-webkit-scrollbar-thumb{background:var(--line)}
+  .side-item{
+    display:flex;align-items:center;gap:24px;
+    width:calc(100% - 24px);height:40px;margin:0 12px;padding:0 12px;
+    border:0;border-radius:10px;background:transparent;color:var(--text);
+    font-size:14px;text-align:left;
+  }
+  .side-item:hover,.side-item.active{background:var(--hover)}
+  .side-item.active{font-weight:500}
+  .side-ico{width:24px;height:24px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+  .side-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side-label{font-size:16px;font-weight:500;padding:18px 24px 6px}
+  .side-foot{font-size:12px;line-height:1.5;color:var(--muted);padding:18px 24px 0}
+  .scrim{display:none}
+
+  main{flex:1;min-width:0;overflow:auto;background:var(--bg)}
+  .view{display:none}
+  .view.active{display:block}
+  .chips-wrap{
+    position:sticky;top:0;z-index:5;background:var(--bg);
+    padding:12px 24px 8px;
+  }
+  .chips{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex-shrink:0;height:32px;padding:0 12px;border:0;border-radius:8px;
+    background:var(--chip);color:var(--text);font-size:14px;font-weight:500;
+  }
+  .chip:hover{background:var(--chip-hover)}
+  .chip.active,.chip.active:hover{background:var(--text);color:var(--bg)}
+  #resultLabel{padding:8px 24px 0;font-size:18px;font-weight:500}
+  .feed{
+    display:grid;gap:40px 16px;
+    padding:12px 24px calc(40px + env(safe-area-inset-bottom));
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  @media (max-width:699px){
+    .feed{grid-template-columns:1fr;gap:28px 0;padding:8px 12px calc(28px + env(safe-area-inset-bottom))}
+    .chips-wrap{padding:12px 12px 8px}
+    #resultLabel{padding-left:12px;padding-right:12px}
+  }
+  @media (min-width:1280px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1700px){.feed{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:56px 16px;font-size:16px}
+  .yt-card{display:block;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit}
+  .thumb{position:relative;border-radius:12px;overflow:hidden;background:var(--bg-soft)}
+  .thumb img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
+  .meta{display:flex;gap:12px;margin-top:12px;align-items:flex-start}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+    color:#fff;font-size:18px;flex-shrink:0;font-weight:700;
+  }
+  .meta-text{min-width:0}
+  .title{
+    font-size:16px;font-weight:500;line-height:22px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .sub{margin-top:2px;font-size:14px;line-height:20px;color:var(--muted)}
+
+  .watch-layout{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,402px);
+    gap:24px;padding:16px 24px calc(40px + env(safe-area-inset-bottom));
+  }
+  .frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
   .frame-wrap iframe,#player{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .placeholder{
-    position:absolute;inset:0;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-    color:var(--text-dim);font-size:15px;
+  .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa}
+  .watch-title{font-size:20px;font-weight:700;line-height:28px;margin:12px 0}
+  .channel-row{display:flex;align-items:center;gap:12px}
+  .channel-row .avatar{width:40px;height:40px;font-size:20px}
+  .ch-name{font-size:16px;font-weight:500}
+  .ch-sub{margin-top:2px;font-size:12px;color:var(--muted)}
+  .desc{
+    margin-top:16px;background:var(--bg-soft);border-radius:12px;
+    padding:12px 14px;font-size:14px;line-height:1.55;
   }
-  .placeholder .tv{font-size:46px}
+  .upnext-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:16px;font-weight:500}
+  .auto-pill{font-size:12px;font-weight:500;color:var(--muted);background:var(--bg-soft);border-radius:999px;padding:6px 10px}
+  .up-item{
+    display:flex;gap:8px;width:100%;margin:0 0 8px;padding:4px;border:0;border-radius:8px;
+    background:transparent;color:inherit;text-align:left;
+  }
+  .up-item:hover,.up-item.active{background:var(--hover)}
+  .up-thumb{position:relative;width:168px;flex-shrink:0;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000}
+  .up-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .now-tag{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.78);color:#fff;font-size:12px;font-weight:500;text-align:center;padding:3px 0}
+  .up-title{font-size:14px;font-weight:500;line-height:20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .up-item.active .up-title{font-weight:600}
+  .up-sub{margin-top:4px;font-size:12px;color:var(--muted)}
 
-  .cats{
-    flex-shrink:0;display:flex;gap:10px;
-    padding:14px 14px 2px;overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    max-width:928px;margin:0 auto;width:100%;
+  @media (max-width:799px){
+    .sidebar{
+      position:fixed;top:var(--header-h);bottom:0;left:0;z-index:45;
+      transform:translateX(-105%);transition:transform .2s ease;
+      box-shadow:none;
+    }
+    body.drawer-open .sidebar{transform:none;box-shadow:8px 0 24px rgba(0,0,0,.18)}
+    body.drawer-open .scrim{
+      display:block;position:fixed;top:var(--header-h);right:0;bottom:0;left:0;
+      background:rgba(0,0,0,.45);z-index:40;
+    }
+    .watch-layout{grid-template-columns:1fr;padding:0 0 calc(28px + env(safe-area-inset-bottom))}
+    .frame-wrap{border-radius:0}
+    .watch-primary{padding:0 12px}
+    .frame-wrap{margin:0 -12px;width:auto}
+    .upnext-col{padding:8px 12px 0}
+    .up-thumb{width:140px}
   }
-  .cats::-webkit-scrollbar{display:none}
-  .cat{
-    flex-shrink:0;background:var(--card);border:2px solid var(--card-edge);
-    border-radius:999px;padding:10px 18px;
-    font-size:16px;font-weight:800;font-family:inherit;
-    color:var(--text-dim);cursor:pointer;
-    transition:transform .12s,border-color .15s,color .15s;
+  @media (min-width:800px){
+    body.mini .sidebar{width:72px}
+    body.mini .side-text,body.mini .side-label,body.mini .side-foot{display:none}
+    body.mini .side-item{justify-content:center;gap:0;padding:0;width:calc(100% - 16px);margin:0 8px}
   }
-  .cat:active{transform:scale(.95)}
-  .cat:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
-  .cat.active{
-    border-color:var(--sun);color:var(--text);
-    background:linear-gradient(135deg, rgba(255,209,102,.15), var(--card) 70%);
+  @media (max-width:720px){
+    .brand-name{display:none}
+    .yt-header{gap:6px;padding-right:8px}
+    .search-go{width:48px}
+    .time-chip{font-size:12px;padding:5px 8px}
   }
-
-  .grid-area{flex:1;overflow-y:auto;padding:12px 14px calc(20px + env(safe-area-inset-bottom))}
-  .grid{
-    max-width:900px;margin:0 auto;
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;
+  @media (max-width:1100px) and (min-width:800px){
+    .watch-layout{grid-template-columns:1fr}
   }
-  .vbtn{
-    background:var(--card);border:2px solid var(--card-edge);
-    border-radius:16px;padding:0;overflow:hidden;cursor:pointer;
-    font-family:inherit;color:var(--text);text-align:center;
-    transition:transform .12s,border-color .15s;
-  }
-  .vbtn:active{transform:scale(.95)}
-  .vbtn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
-  .vbtn.active{border-color:var(--sun)}
-  .vbtn img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
-  .vbtn .nm{
-    display:flex;align-items:center;justify-content:center;gap:6px;
-    padding:10px 8px;font-size:15px;font-weight:700;min-height:44px;
-  }
-  .vbtn.active .nm::before{content:"▶";color:var(--sun);font-size:12px}
 
   .overlay{
-    position:fixed;inset:0;z-index:50;
-    background:rgba(10,16,30,.96);
+    position:fixed;inset:0;z-index:80;background:var(--overlay);
     display:none;align-items:center;justify-content:center;padding:20px;
   }
   .overlay.show{display:flex}
   .sheet{
-    background:var(--card);border:1px solid var(--card-edge);
-    border-radius:20px;padding:26px;
-    width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
+    background:var(--bg);color:var(--text);border-radius:16px;
+    box-shadow:0 12px 40px rgba(0,0,0,.28);
+    padding:22px;width:100%;max-width:560px;max-height:86vh;overflow-y:auto;
   }
   .sheet h2{font-size:20px;margin-bottom:16px}
   .sheet h3{font-size:15px;margin:0 0 10px}
   .sheet .big-emoji{font-size:60px;text-align:center;display:block;margin-bottom:12px}
-  .sheet p{color:var(--text-dim);font-size:14px;line-height:1.6;margin-bottom:16px}
+  .sheet p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:16px}
   .sheet input[type=text],.sheet input[type=password],.sheet input[type=number],
   .sheet input[type=time],.sheet textarea{
-    width:100%;background:var(--bg);border:1px solid var(--card-edge);
-    border-radius:10px;padding:12px;color:var(--text);
-    font-size:16px;font-family:inherit;margin-bottom:12px;
+    width:100%;background:var(--input-bg);border:1px solid var(--search-border);
+    border-radius:8px;padding:12px;font-size:16px;margin-bottom:12px;
   }
-  .sheet textarea{font-family:monospace;font-size:12px;min-height:70px;resize:vertical}
+  .sheet textarea{font-family:ui-monospace,monospace;font-size:12px;min-height:70px;resize:vertical}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;
-    background:var(--sun);color:#3a2c00;border:0;border-radius:12px;
-    padding:12px 20px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;
+    background:var(--text);color:var(--bg);border:0;border-radius:18px;
+    padding:10px 16px;font-size:14px;font-weight:500;
   }
-  .btn.ghost{background:transparent;color:var(--text-dim);border:1px solid var(--card-edge)}
-  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:var(--bg-soft);color:var(--text)}
+  .btn:active{transform:scale(.98)}
   .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
   .msg{font-size:13px;min-height:18px;margin-bottom:8px}
   .msg.err{color:var(--danger)}
   .msg.ok{color:var(--ok)}
-
   .vrow{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
   .vrow input{margin-bottom:0!important}
   .vrow input.vc{flex:0 0 110px}
   .vrow input.vn{flex:1;min-width:100px}
-  .vrow input.vi{flex:1;min-width:110px;font-family:monospace}
+  .vrow input.vi{flex:1;min-width:110px;font-family:ui-monospace,monospace}
   .vrow .del{
-    flex-shrink:0;width:44px;background:transparent;
-    border:1px solid var(--card-edge);border-radius:10px;
-    color:var(--danger);font-size:18px;cursor:pointer;
+    flex-shrink:0;width:44px;background:transparent;border:1px solid var(--line);
+    border-radius:8px;color:var(--danger);font-size:18px;
   }
-  .field-label{font-size:13px;color:var(--text-dim);margin:14px 0 6px;display:block}
-  .divider{border:0;border-top:1px solid var(--card-edge);margin:18px 0}
+  .field-label{font-size:13px;color:var(--muted);margin:14px 0 6px;display:block}
+  .divider{border:0;border-top:1px solid var(--line);margin:18px 0}
   .inline2{display:flex;gap:10px}
-  .inline2>div{flex:1}
+  .inline2>div{flex:1;min-width:0}
   .chk{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px;cursor:pointer}
-  .chk input{width:20px;height:20px;accent-color:var(--sun)}
-  .statrow{display:flex;justify-content:space-between;font-size:13px;color:var(--text-dim);padding:4px 0}
-  .statrow b{color:var(--text)}
-  .statbar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:2px 0 8px}
-  .statbar>div{height:100%;background:var(--sun)}
+  .chk input{width:18px;height:18px;accent-color:var(--red)}
+  .statrow{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);padding:4px 0}
+  .statrow b{color:var(--text);font-weight:500}
+  .statbar{height:4px;background:var(--bg-soft);border-radius:2px;overflow:hidden;margin:2px 0 8px}
+  .statbar>div{height:100%;background:var(--red)}
 </style>
 </head>
 <body>
 
-<header>
-  <span class="logo">📺</span>
-  <h1>寶寶電視</h1>
-  <span class="timeleft" id="timeLeft"></span>
-  <button class="gearbtn" id="gearBtn" title="家長設定">⚙️</button>
+<header class="yt-header">
+  <div class="left">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="選單">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+    </button>
+    <button class="brand" id="brandHome" type="button" aria-label="寶寶電視首頁">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="#fff" d="M8 5v14l11-7z"/></svg></span>
+      <span class="brand-name">寶寶電視</span>
+    </button>
+  </div>
+  <form class="search" id="searchForm" role="search">
+    <input id="searchInput" type="search" placeholder="搜尋片單" autocomplete="off" enterkeyhint="search" aria-label="搜尋片單">
+    <button class="search-go" type="submit" aria-label="搜尋">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </button>
+  </form>
+  <div class="right">
+    <span class="time-chip" id="timeLeft"></span>
+    <button class="avatar-btn" id="gearBtn" type="button" title="家長設定" aria-label="家長設定">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.02 7.02 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.22-1.13.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.4 1.04.72 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.22 1.13-.54 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+    </button>
+  </div>
 </header>
 
-<div class="stage">
-  <div class="frame-wrap">
-    <div id="player">
-      <div class="placeholder"><span class="tv">📺</span><span>揀個台,再㩒條片</span></div>
-    </div>
-  </div>
+<div class="app">
+  <nav class="sidebar" id="sidebar" aria-label="導覽">
+    <button class="side-item active" id="sideHome" type="button">
+      <span class="side-ico"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+      <span class="side-text">首頁</span>
+    </button>
+    <div class="side-label">電視台</div>
+    <div id="sideCats"></div>
+    <div class="side-label">家長</div>
+    <button class="side-item" id="sideSettings" type="button">
+      <span class="side-ico"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.02 7.02 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.22-1.13.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.4 1.04.72 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.22 1.13-.54 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></span>
+      <span class="side-text">設定</span>
+    </button>
+    <p class="side-foot">只會播你加入嘅片。搜尋唔會去 YouTube，亦唔會出推薦。</p>
+  </nav>
+  <div class="scrim" id="scrim"></div>
+
+  <main id="main">
+    <section class="view active" id="homeView">
+      <div class="chips-wrap"><div class="chips" id="cats" role="tablist" aria-label="電視台"></div></div>
+      <p id="resultLabel" hidden></p>
+      <div class="feed" id="grid"></div>
+    </section>
+
+    <section class="view" id="watchView">
+      <div class="watch-layout">
+        <div class="watch-primary">
+          <div class="frame-wrap">
+            <div id="player"><div class="placeholder">揀條片開始播</div></div>
+          </div>
+          <h1 class="watch-title" id="watchTitle"></h1>
+          <div class="channel-row">
+            <div class="avatar" id="watchAvatar"></div>
+            <div>
+              <div class="ch-name" id="watchCat"></div>
+              <div class="ch-sub">白名單電視台</div>
+            </div>
+          </div>
+          <p class="desc" id="watchDesc"></p>
+        </div>
+        <aside class="upnext-col" aria-label="下一個">
+          <div class="upnext-head"><span>下一個</span><span class="auto-pill">自動連播</span></div>
+          <div id="upnext"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
 </div>
 
-<div class="cats" id="cats"></div>
-
-<div class="grid-area">
-  <div class="grid" id="grid"></div>
-</div>
-
-<!-- 限時鎖 -->
 <div class="overlay" id="lockOverlay">
   <div class="sheet">
     <span class="big-emoji">🌙</span>
     <h2 style="text-align:center">今日睇完喇</h2>
-    <p style="text-align:center">今日嘅電視時間用晒喇,聽日再嚟啦!</p>
+    <p style="text-align:center">今日嘅電視時間用晒喇，聽日再嚟啦！</p>
     <div class="msg err" id="lockMsg"></div>
     <input type="password" id="lockPw" placeholder="家長密碼" inputmode="numeric">
     <div class="btn-row">
-      <button class="btn" id="lockUnlockBtn">加時 15 分鐘</button>
+      <button class="btn" id="lockUnlockBtn" type="button">加時 15 分鐘</button>
     </div>
   </div>
 </div>
 
-<!-- 瞓覺時段鎖 -->
 <div class="overlay" id="bedOverlay">
   <div class="sheet">
     <span class="big-emoji">😴</span>
     <h2 style="text-align:center">瞓覺時間喇</h2>
-    <p style="text-align:center">而家係休息時間,聽日先再睇啦!</p>
+    <p style="text-align:center">而家係休息時間，聽日先再睇啦！</p>
     <div class="msg err" id="bedMsg"></div>
     <input type="password" id="bedPw" placeholder="家長密碼" inputmode="numeric">
     <div class="btn-row">
-      <button class="btn" id="bedUnlockBtn">暫時解鎖 15 分鐘</button>
+      <button class="btn" id="bedUnlockBtn" type="button">暫時解鎖 15 分鐘</button>
     </div>
   </div>
 </div>
 
-<!-- 密碼(通用) -->
 <div class="overlay" id="pwOverlay">
   <div class="sheet">
     <h2 id="pwTitle">家長密碼</h2>
     <div class="msg err" id="pwMsg"></div>
     <input type="password" id="pwInput" placeholder="輸入密碼" inputmode="numeric">
     <div class="btn-row">
-      <button class="btn ghost" id="pwCancel">取消</button>
-      <button class="btn" id="pwOk">確定</button>
+      <button class="btn ghost" id="pwCancel" type="button">取消</button>
+      <button class="btn" id="pwOk" type="button">確定</button>
     </div>
   </div>
 </div>
 
-<!-- 家長設定 -->
 <div class="overlay" id="setOverlay">
   <div class="sheet">
-    <h2>⚙️ 家長設定</h2>
+    <h2>家長設定</h2>
 
-    <span class="field-label">片單(台 + 名 + YouTube 影片 ID,ID 嗰格貼成條 link 都得)</span>
+    <span class="field-label">片單（台 + 名 + YouTube 影片 ID，ID 嗰格貼成條 link 都得）</span>
     <div id="vlist"></div>
-    <button class="btn ghost" id="addRow" style="width:100%">＋ 加一條片</button>
-    <p style="margin-top:8px;font-size:12px">💡 「台」打同一個名自動歸同一個台,可加 emoji。</p>
+    <button class="btn ghost" id="addRow" type="button" style="width:100%">＋ 加一條片</button>
+    <p style="margin-top:8px;font-size:12px">「台」打同一個名會自動歸同一個台，可以加 emoji。</p>
 
     <hr class="divider">
 
-    <h3>⏱ 每日限時(分鐘,0 = 冇限制)</h3>
+    <h3>每日限時（分鐘，0 = 冇限制）</h3>
     <div class="inline2">
-      <div><span class="field-label">平日(一至五)</span><input type="number" id="setLimitWd" min="0" max="600" inputmode="numeric"></div>
-      <div><span class="field-label">週末(六、日)</span><input type="number" id="setLimitWe" min="0" max="600" inputmode="numeric"></div>
+      <div><span class="field-label">平日（一至五）</span><input type="number" id="setLimitWd" min="0" max="600" inputmode="numeric"></div>
+      <div><span class="field-label">週末（六、日）</span><input type="number" id="setLimitWe" min="0" max="600" inputmode="numeric"></div>
     </div>
-    <span class="field-label">今日已睇:<b id="usedToday"></b></span>
-    <button class="btn ghost" id="resetToday" style="width:100%">重設今日計時</button>
+    <span class="field-label">今日已睇：<b id="usedToday"></b></span>
+    <button class="btn ghost" id="resetToday" type="button" style="width:100%">重設今日計時</button>
 
     <hr class="divider">
 
-    <h3>😴 瞓覺時段鎖</h3>
+    <h3>瞓覺時段鎖</h3>
     <label class="chk"><input type="checkbox" id="bedOn"> 啟用</label>
     <div class="inline2">
       <div><span class="field-label">由</span><input type="time" id="bedStart" value="20:00"></div>
@@ -251,50 +414,81 @@
 
     <hr class="divider">
 
-    <h3>🔒 要密碼先開到嘅台</h3>
-    <div id="lockCatList"><p style="margin:0;font-size:13px">(儲存片單後先會顯示新台)</p></div>
+    <h3>要密碼先開到嘅台</h3>
+    <div id="lockCatList"><p style="margin:0;font-size:13px">（儲存片單後先會顯示新台）</p></div>
 
     <hr class="divider">
 
-    <h3>📊 觀看統計</h3>
+    <h3>觀看統計</h3>
     <span class="field-label">過去 7 日</span>
     <div id="statDays"></div>
-    <span class="field-label">最多睇嘅片(累計)</span>
+    <span class="field-label">最多睇嘅片（累計）</span>
     <div id="statVids"></div>
 
     <hr class="divider">
 
-    <h3>💾 備份 / 同步</h3>
-    <p style="margin-bottom:8px;font-size:13px">「匯出」產生一段同步碼,喺另一部裝置貼上「匯入」,片單同設定即刻搬過去。</p>
-    <button class="btn ghost" id="exportBtn" style="width:100%">匯出同步碼</button>
-    <textarea id="syncCode" placeholder="同步碼會喺度顯示 / 或者貼入嚟匯入"></textarea>
-    <button class="btn ghost" id="importBtn" style="width:100%">匯入同步碼</button>
+    <h3>備份 / 同步</h3>
+    <p style="margin-bottom:8px;font-size:13px">「匯出」產生一段同步碼，喺另一部裝置貼上「匯入」，片單同設定即刻搬過去。</p>
+    <button class="btn ghost" id="exportBtn" type="button" style="width:100%">匯出同步碼</button>
+    <textarea id="syncCode" placeholder="同步碼會喺度顯示，或者貼入嚟匯入"></textarea>
+    <button class="btn ghost" id="importBtn" type="button" style="width:100%">匯入同步碼</button>
 
     <hr class="divider">
 
-    <label class="chk"><input type="checkbox" id="sndOn"> 🔊 按鍵音效</label>
+    <label class="chk"><input type="checkbox" id="sndOn"> 按鍵音效</label>
 
-    <span class="field-label">更改密碼(留空 = 唔改)</span>
+    <span class="field-label">更改密碼（留空 = 唔改）</span>
     <input type="password" id="setPw" placeholder="新密碼" inputmode="numeric">
 
     <div class="msg" id="setMsg"></div>
     <div class="btn-row">
-      <button class="btn ghost" id="setCancel">閂咗佢</button>
-      <button class="btn" id="setSave">儲存</button>
+      <button class="btn ghost" id="setCancel" type="button">關閉</button>
+      <button class="btn" id="setSave" type="button">儲存</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   預設值:第一次用先讀呢度,之後以設定頁為準
-   ═══════════════════════════════════════════ */
+const NB1="🔴 Numberblocks 1";
+const NB2="🟠 Numberblocks 2";
+const NUMBERBLOCKS=[
+  {cat:NB1,name:"01 One",id:"jVeYnCehEFE"},
+  {cat:NB1,name:"02 Another One",id:"bz2oWyDjgbc"},
+  {cat:NB1,name:"03 Two",id:"aJzaNIpbUZo"},
+  {cat:NB1,name:"04 Three",id:"6-duQqX5ECs"},
+  {cat:NB1,name:"05 One, Two, Three",id:"IqkSbJqplpg"},
+  {cat:NB1,name:"06 Four",id:"Wafr8h4EsXg"},
+  {cat:NB1,name:"07 Five",id:"-U1wQ0gu0Es"},
+  {cat:NB1,name:"08 Three Little Pigs",id:"yKAttOvgWJc"},
+  {cat:NB1,name:"09 Off We Go",id:"37E3wokWzlU"},
+  {cat:NB1,name:"10 How to Count",id:"Ap5kgJ-bpEQ"},
+  {cat:NB1,name:"11 Stampolines",id:"M2u_jRHYUh0"},
+  {cat:NB1,name:"12 The Whole of Me",id:"fJ6k7vkV99o"},
+  {cat:NB1,name:"13 The Terrible Twos",id:"Vyx-oZpnPhY"},
+  {cat:NB1,name:"14 Holes",id:"Kv_j6gpD5Jo"},
+  {cat:NB1,name:"15 Hide and Seek",id:"q4RTnmfOSNI"},
+  {cat:NB2,name:"01 Six",id:"X5Q18PkuLtM"},
+  {cat:NB2,name:"02 Seven",id:"NVJ7uXC1tYU"},
+  {cat:NB2,name:"03 Eight",id:"4DBmy4sOFis"},
+  {cat:NB2,name:"04 Nine",id:"5hGh6rqH4U4"},
+  {cat:NB2,name:"05 Ten",id:"ZNNUo-uQYwQ"},
+  {cat:NB2,name:"06 Just Add One",id:"S7CYJ9US2fk"},
+  {cat:NB2,name:"07 Blast Off",id:"O7VKyV43SBE"},
+  {cat:NB2,name:"08 Counting Sheep",id:"BO_pxx340iU"},
+  {cat:NB2,name:"09 Double Trouble",id:"CD4oKyOuINc"},
+  {cat:NB2,name:"10 The Three Threes",id:"QR1_9b4H_Y0"},
+  {cat:NB2,name:"11 Odds and Evens",id:"UdmHrpyZfQc"},
+  {cat:NB2,name:"12 Fluffies",id:"3pbyveE9C-4"},
+  {cat:NB2,name:"13 The Two Tree",id:"SkuHXMiJwFw"},
+  {cat:NB2,name:"14 Numberblock Castle",id:"cxGC0G273KI"},
+  {cat:NB2,name:"15 Ten Green Bottles",id:"ynTb9shdZLY"}
+];
 const DEFAULT_VIDEOS = [
   { cat: "🎨 節目台", name: "阿斯拉玩具開箱", id: "a3vHGrCZnuo" },
-  { cat: "📚 教育台", name: "Miss Rachael", id: "hTqtGJwsJVE" }
+  { cat: "📚 教育台", name: "Miss Rachael", id: "hTqtGJwsJVE" },
+  ...NUMBERBLOCKS
 ];
 const DEFAULT_PASSWORD = "1234";
-/* ═══════════════════════════════════════════ */
 
 const store = {
   get(k, fb){ try{ const v = localStorage.getItem("btv_"+k); return v===null?fb:JSON.parse(v);}catch(e){return fb} },
@@ -302,33 +496,43 @@ const store = {
 };
 
 let VIDEOS   = store.get("videos", DEFAULT_VIDEOS).map(v=>({cat:v.cat||"📺 節目台",name:v.name,id:v.id}));
+function ensurePacks(){
+  const done=store.get("packs", []);
+  const doneSet=new Set(Array.isArray(done)?done:[]);
+  if(doneSet.has("nb12")) return;
+  const have=new Set(VIDEOS.map(v=>v.id));
+  let changed=false;
+  NUMBERBLOCKS.forEach(v=>{
+    if(have.has(v.id)) return;
+    VIDEOS.push({cat:v.cat,name:v.name,id:v.id});
+    have.add(v.id);
+    changed=true;
+  });
+  doneSet.add("nb12");
+  store.set("packs",[...doneSet]);
+  if(changed) store.set("videos",VIDEOS);
+}
+ensurePacks();
 let PASSWORD = store.get("pw", DEFAULT_PASSWORD);
-/* 限時:兼容舊版單一 limit */
 const oldLimit = store.get("limit", null);
 let LIMIT_WD = store.get("limitWd", oldLimit!==null?oldLimit:0);
 let LIMIT_WE = store.get("limitWe", oldLimit!==null?oldLimit:0);
-/* 瞓覺時段 */
 let BED = store.get("bed", {on:false,start:"20:00",end:"07:00"});
-/* 鎖台 */
 let LOCKED_CATS = store.get("lockedCats", []);
-/* 音效 */
 let SND = store.get("snd", true);
 
 function isWeekend(){ const d=new Date().getDay(); return d===0||d===6; }
 function limitToday(){ return isWeekend()?LIMIT_WE:LIMIT_WD; }
-
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 function getUsedSec(){ const rec = store.get("used", {}); return rec.day===todayKey() ? rec.sec : 0; }
 function setUsedSec(s){ store.set("used", {day:todayKey(), sec:s}); }
 let usedSec = getUsedSec();
 let bonusSec = store.get("bonus", {}).day===todayKey() ? store.get("bonus",{}).sec : 0;
 function setBonus(s){ store.set("bonus",{day:todayKey(),sec:s}); }
-/* 瞓覺暫時解鎖(到某個時間戳為止) */
 let bedOverrideUntil = store.get("bedOv", 0);
 
-/* ── 統計 ── */
-let STAT_DAYS = store.get("statDays", {});   // {"2026-8-25": sec}
-let STAT_VIDS = store.get("statVids", {});   // {videoId: sec}
+let STAT_DAYS = store.get("statDays", {});
+let STAT_VIDS = store.get("statVids", {});
 function trimStats(){
   const keys=Object.keys(STAT_DAYS);
   if(keys.length>14){
@@ -337,7 +541,6 @@ function trimStats(){
   }
 }
 
-/* ── 音效 ── */
 let audioCtx=null;
 function blip(){
   if(!SND) return;
@@ -353,86 +556,313 @@ function blip(){
   }catch(e){}
 }
 
-/* ── 電視台 / 播放 ── */
-let currentCat=null;
-let unlockedCats=new Set();   // 今次開 app 期間解鎖咗嘅台(重開會再鎖)
-let player=null, apiReady=false, pendingIdx=null, currentIdx=-1;
+let currentCat="__all__";
+let playingCat=null;
+let playingId=null;
+let searchQuery="";
+let player=null, apiReady=false, pendingIdx=null, currentIdx=-1, playToken=0;
 const catsEl=document.getElementById("cats");
 const grid=document.getElementById("grid");
-let btns=[];
+const sideCats=document.getElementById("sideCats");
+const sideHome=document.getElementById("sideHome");
+const homeView=document.getElementById("homeView");
+const watchView=document.getElementById("watchView");
+const mainEl=document.getElementById("main");
+const searchInput=document.getElementById("searchInput");
 
 function catList(){ return [...new Set(VIDEOS.map(v=>v.cat))]; }
-function catVideos(){ return VIDEOS.filter(v=>v.cat===currentCat); }
 function isCatLocked(c){ return LOCKED_CATS.includes(c) && !unlockedCats.has(c); }
+let unlockedCats=new Set();
+function queueVideos(){ return VIDEOS.filter(v=>v.cat===playingCat); }
+function browseVideos(){
+  const q=searchQuery.trim().toLowerCase();
+  return VIDEOS.filter(v=>{
+    if(isCatLocked(v.cat)) return false;
+    if(q) return (v.name+" "+v.cat).toLowerCase().includes(q);
+    if(currentCat!=="__all__") return v.cat===currentCat;
+    return true;
+  });
+}
+function splitCat(cat){
+  const chars=Array.from(String(cat||"").trim());
+  if(!chars.length) return {icon:"▶", name:"節目台"};
+  const first=chars[0];
+  const rest=chars.slice(1).join("").trim();
+  if(rest && !/[A-Za-z0-9\u4e00-\u9fff]/.test(first)) return {icon:first, name:rest};
+  return {icon:first, name:String(cat).trim()};
+}
+function catHue(cat){
+  let h=0;
+  for(const ch of String(cat)) h=(h*33+ch.codePointAt(0))%360;
+  return h;
+}
+function avatarBg(cat){ return "hsl("+catHue(cat)+" 52% 40%)"; }
+function watchedLabel(id){
+  const sec=STAT_VIDS[id]||0;
+  if(sec<60) return "白名單影片";
+  return "睇過 "+Math.round(sec/60)+" 分鐘";
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function extractId(raw){
+  const s=String(raw||"").trim();
+  const m=s.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/);
+  if(m) return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  return "";
+}
+
+function closeDrawer(){ document.body.classList.remove("drawer-open"); }
+function showHome(){
+  homeView.classList.add("active");
+  watchView.classList.remove("active");
+  document.title="寶寶電視";
+  mainEl.scrollTop=0;
+  if(player && player.pauseVideo){ try{ player.pauseVideo(); }catch(e){} }
+}
+function showWatch(){
+  homeView.classList.remove("active");
+  watchView.classList.add("active");
+  mainEl.scrollTop=0;
+  void watchView.offsetHeight;
+}
+
+function selectCat(c){
+  blip();
+  const go=()=>{
+    currentCat=c;
+    searchQuery="";
+    searchInput.value="";
+    showHome();
+    buildCats();
+    buildGrid();
+    closeDrawer();
+  };
+  if(c!=="__all__" && isCatLocked(c)){
+    openPw("解鎖「"+c+"」",()=>{ unlockedCats.add(c); go(); });
+    return;
+  }
+  go();
+}
 
 function buildCats(){
   const cats=catList();
-  if(!cats.includes(currentCat) || isCatLocked(currentCat)){
-    currentCat = cats.find(c=>!isCatLocked(c)) || null;
-  }
+  if(currentCat!=="__all__" && (!cats.includes(currentCat) || isCatLocked(currentCat))) currentCat="__all__";
+  const searching=searchQuery.trim().length>0;
+  sideHome.classList.toggle("active", currentCat==="__all__" && !searching);
+  sideHome.setAttribute("aria-current", sideHome.classList.contains("active")?"page":"false");
   catsEl.innerHTML="";
-  catsEl.style.display = cats.length>1 ? "flex" : "none";
-  cats.forEach(c=>{
+  sideCats.innerHTML="";
+  const addChip=(label,value)=>{
     const b=document.createElement("button");
-    b.className="cat"+(c===currentCat?" active":"");
-    b.textContent=(LOCKED_CATS.includes(c)?"🔒 ":"")+c;
-    b.addEventListener("click",()=>{
-      blip();
-      if(isCatLocked(c)){
-        openPw("解鎖「"+c+"」",()=>{
-          unlockedCats.add(c);
-          currentCat=c; currentIdx=-1;
-          buildCats(); buildGrid();
-        });
-        return;
-      }
-      currentCat=c; currentIdx=-1;
-      buildCats(); buildGrid();
-    });
+    b.type="button";
+    b.className="chip"+(!searching && currentCat===value?" active":"");
+    b.textContent=label;
+    b.addEventListener("click",()=>selectCat(value));
     catsEl.appendChild(b);
+  };
+  addChip("全部","__all__");
+  cats.forEach(c=>{
+    const locked=LOCKED_CATS.includes(c);
+    const parts=splitCat(c);
+    addChip((locked?"🔒 ":"")+c, c);
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="side-item"+(!searching && currentCat===c?" active":"");
+    b.title=c;
+    const ico=document.createElement("span");
+    ico.className="side-ico";
+    ico.textContent=locked?"🔒":parts.icon;
+    const t=document.createElement("span");
+    t.className="side-text";
+    t.textContent=parts.name;
+    b.append(ico,t);
+    b.addEventListener("click",()=>selectCat(c));
+    sideCats.appendChild(b);
   });
 }
 
+function renderCard(v){
+  const b=document.createElement("button");
+  b.type="button";
+  b.className="yt-card";
+  const parts=splitCat(v.cat);
+  const thumb=document.createElement("div");
+  thumb.className="thumb";
+  const img=document.createElement("img");
+  img.alt="";
+  img.loading="lazy";
+  img.src="https://i.ytimg.com/vi/"+v.id+"/hqdefault.jpg";
+  img.addEventListener("error",function onErr(){
+    img.removeEventListener("error", onErr);
+    img.src="https://i.ytimg.com/vi/"+v.id+"/mqdefault.jpg";
+  });
+  thumb.appendChild(img);
+  const meta=document.createElement("div");
+  meta.className="meta";
+  const av=document.createElement("div");
+  av.className="avatar";
+  av.textContent=parts.icon;
+  av.style.background=avatarBg(v.cat);
+  const text=document.createElement("div");
+  text.className="meta-text";
+  const title=document.createElement("div");
+  title.className="title";
+  title.textContent=v.name;
+  const sub=document.createElement("div");
+  sub.className="sub";
+  sub.textContent=v.cat;
+  const sub2=document.createElement("div");
+  sub2.className="sub";
+  sub2.textContent=watchedLabel(v.id);
+  text.append(title,sub,sub2);
+  meta.append(av,text);
+  b.append(thumb,meta);
+  b.addEventListener("click",()=>{ blip(); playVideoObject(v); });
+  return b;
+}
+
 function buildGrid(){
-  grid.innerHTML=""; btns=[];
-  if(!currentCat) return;
-  catVideos().forEach((v,i)=>{
+  grid.innerHTML="";
+  const q=searchQuery.trim();
+  const label=document.getElementById("resultLabel");
+  const list=browseVideos();
+  if(q){
+    label.hidden=false;
+    label.textContent="「"+q+"」· "+list.length+" 條片";
+  }else label.hidden=true;
+  if(!list.length){
+    const p=document.createElement("p");
+    p.className="empty";
+    if(q) p.textContent="片單入面冇呢個";
+    else if(currentCat==="__all__" && VIDEOS.length && VIDEOS.every(v=>isCatLocked(v.cat))) p.textContent="電視台鎖住咗，撳左邊先解鎖";
+    else p.textContent=currentCat==="__all__"?"未有可以播嘅片":"呢個台未有片";
+    grid.appendChild(p);
+    return;
+  }
+  list.forEach(v=>grid.appendChild(renderCard(v)));
+}
+
+function renderWatch(list,i){
+  const v=list[i];
+  if(!v) return;
+  const parts=splitCat(v.cat);
+  document.getElementById("watchTitle").textContent=v.name;
+  document.getElementById("watchCat").textContent=v.cat;
+  const av=document.getElementById("watchAvatar");
+  av.textContent=parts.icon;
+  av.style.background=avatarBg(v.cat);
+  document.getElementById("watchDesc").textContent="播完會自動播「"+parts.name+"」下一條，循環播放，唔會出 YouTube 推薦。";
+  const box=document.getElementById("upnext");
+  box.innerHTML="";
+  list.forEach((item,k)=>{
     const b=document.createElement("button");
-    b.className="vbtn"+(i===currentIdx?" active":"");
-    b.innerHTML='<img src="https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg" alt="" loading="lazy">'+
-                '<span class="nm">'+esc(v.name)+'</span>';
-    b.addEventListener("click",()=>{ blip(); playIndex(i); });
-    grid.appendChild(b); btns.push(b);
+    b.type="button";
+    b.className="up-item"+(k===i?" active":"");
+    const thumb=document.createElement("div");
+    thumb.className="up-thumb";
+    const img=document.createElement("img");
+    img.alt="";
+    img.src="https://i.ytimg.com/vi/"+encodeURIComponent(item.id)+"/mqdefault.jpg";
+    thumb.appendChild(img);
+    if(k===i){
+      const tag=document.createElement("span");
+      tag.className="now-tag";
+      tag.textContent="正在播放";
+      thumb.appendChild(tag);
+    }
+    const text=document.createElement("div");
+    const title=document.createElement("div");
+    title.className="up-title";
+    title.textContent=item.name;
+    const sub=document.createElement("div");
+    sub.className="up-sub";
+    sub.textContent=item.cat;
+    text.append(title,sub);
+    b.append(thumb,text);
+    b.addEventListener("click",()=>{ blip(); playIndex(k); });
+    box.appendChild(b);
   });
 }
-function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function playVideoObject(v){
+  if(isCatLocked(v.cat)){
+    openPw("解鎖「"+v.cat+"」",()=>{
+      unlockedCats.add(v.cat);
+      buildCats(); buildGrid();
+      playingCat=v.cat;
+      playIndex(queueVideos().indexOf(v));
+    });
+    return;
+  }
+  playingCat=v.cat;
+  playIndex(queueVideos().indexOf(v));
+}
 
 const tag=document.createElement("script");
 tag.src="https://www.youtube.com/iframe_api";
 document.head.appendChild(tag);
-function onYouTubeIframeAPIReady(){ apiReady=true; if(pendingIdx!==null) playIndex(pendingIdx); }
+function onYouTubeIframeAPIReady(){
+  apiReady=true;
+  if(pendingIdx!==null){
+    const i=pendingIdx; pendingIdx=null; playIndex(i);
+  }
+}
+
+function mountOrLoad(id){
+  if(player && player.loadVideoById){
+    player.loadVideoById(id);
+    try{ player.playVideo(); }catch(e){}
+    return;
+  }
+  if(!document.getElementById("player")) return;
+  player=new YT.Player("player",{
+    videoId:id,
+    playerVars:{autoplay:1,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3},
+    events:{
+      onReady:(e)=>{ try{ e.target.playVideo(); }catch(err){} },
+      onStateChange:(e)=>{
+        if(e.data===YT.PlayerState.ENDED){
+          const q=queueVideos();
+          if(!q.length) return;
+          playIndex((currentIdx+1)%q.length);
+        }
+      }
+    }
+  });
+}
 
 function playIndex(i){
   if(inBedtime()){ showBed(); return; }
   if(isLocked()){ showLock(); return; }
-  if(!apiReady){ pendingIdx=i; return; }
-  const list=catVideos();
+  const list=queueVideos();
   if(!list[i]) return;
   currentIdx=i;
-  btns.forEach((b,k)=>b.classList.toggle("active",k===i));
-  if(player){ player.loadVideoById(list[i].id); return; }
-  player=new YT.Player("player",{
-    videoId:list[i].id,
-    playerVars:{autoplay:1,rel:0,playsinline:1,modestbranding:1},
-    events:{ onStateChange:(e)=>{
-      if(e.data===YT.PlayerState.ENDED){
-        playIndex((currentIdx+1)%catVideos().length);
-      }
-    }}
-  });
+  playingId=list[i].id;
+  const id=list[i].id;
+  const token=++playToken;
+  showWatch();
+  renderWatch(list,i);
+  document.title=list[i].name+" - 寶寶電視";
+  if(!apiReady){ pendingIdx=i; return; }
+  pendingIdx=null;
+  if(token!==playToken) return;
+  mountOrLoad(id);
 }
 
-/* ── 鎖判斷 ── */
+function syncPlaybackAfterEdit(){
+  if(!playingId) return;
+  const v=VIDEOS.find(x=>x.id===playingId);
+  if(!v || isCatLocked(v.cat)){
+    playingId=null; playingCat=null; currentIdx=-1;
+    try{ if(player&&player.stopVideo) player.stopVideo(); }catch(e){}
+    showHome();
+    return;
+  }
+  playingCat=v.cat;
+  currentIdx=queueVideos().indexOf(v);
+  if(watchView.classList.contains("active")) renderWatch(queueVideos(), currentIdx);
+}
+
 function isLocked(){
   const lim=limitToday();
   if(lim<=0) return false;
@@ -447,20 +877,18 @@ function inBedtime(){
   const [eh,em]=BED.end.split(":").map(Number);
   const s=sh*60+sm, e=eh*60+em;
   if(s===e) return false;
-  return s<e ? (cur>=s && cur<e) : (cur>=s || cur<e);  // 跨午夜
+  return s<e ? (cur>=s && cur<e) : (cur>=s || cur<e);
 }
 
-/* ── 每 5 秒:計時 + 統計 + 檢查鎖 ── */
 setInterval(()=>{
   if(player && player.getPlayerState && player.getPlayerState()===YT.PlayerState.PLAYING){
     usedSec+=5; setUsedSec(usedSec);
     const tk=todayKey();
     STAT_DAYS[tk]=(STAT_DAYS[tk]||0)+5;
-    const list=catVideos();
+    const list=queueVideos();
     if(list[currentIdx]){ STAT_VIDS[list[currentIdx].id]=(STAT_VIDS[list[currentIdx].id]||0)+5; }
     trimStats();
     store.set("statDays",STAT_DAYS); store.set("statVids",STAT_VIDS);
-
     if(inBedtime()){ player.pauseVideo(); showBed(); }
     else if(isLocked()){ player.pauseVideo(); showLock(); }
   }
@@ -469,17 +897,16 @@ setInterval(()=>{
 
 const timeLeftEl=document.getElementById("timeLeft");
 function updateTimeLabel(){
-  if(inBedtime()){ timeLeftEl.textContent="😴 休息時間"; timeLeftEl.classList.add("warn"); return; }
+  if(inBedtime()){ timeLeftEl.textContent="休息中"; timeLeftEl.classList.add("warn"); return; }
   const lim=limitToday();
-  if(lim<=0){ timeLeftEl.textContent="⏱ 冇限時"; timeLeftEl.classList.remove("warn"); return; }
+  if(lim<=0){ timeLeftEl.textContent="無限時"; timeLeftEl.classList.remove("warn"); return; }
   const left=Math.max(0, lim*60+bonusSec-usedSec);
   const m=Math.ceil(left/60);
-  timeLeftEl.textContent="⏱ 剩返 "+m+" 分鐘";
+  timeLeftEl.textContent="剩 "+m+" 分";
   timeLeftEl.classList.toggle("warn", m<=5);
 }
 updateTimeLabel();
 
-/* ── 限時鎖畫面 ── */
 const lockOverlay=document.getElementById("lockOverlay");
 function showLock(){ lockOverlay.classList.add("show"); }
 document.getElementById("lockUnlockBtn").addEventListener("click",()=>{
@@ -489,12 +916,9 @@ document.getElementById("lockUnlockBtn").addEventListener("click",()=>{
     document.getElementById("lockMsg").textContent="";
     lockOverlay.classList.remove("show");
     updateTimeLabel();
-  }else{
-    document.getElementById("lockMsg").textContent="密碼唔啱";
-  }
+  }else document.getElementById("lockMsg").textContent="密碼唔啱";
 });
 
-/* ── 瞓覺鎖畫面 ── */
 const bedOverlay=document.getElementById("bedOverlay");
 function showBed(){ bedOverlay.classList.add("show"); }
 document.getElementById("bedUnlockBtn").addEventListener("click",()=>{
@@ -505,12 +929,9 @@ document.getElementById("bedUnlockBtn").addEventListener("click",()=>{
     document.getElementById("bedMsg").textContent="";
     bedOverlay.classList.remove("show");
     updateTimeLabel();
-  }else{
-    document.getElementById("bedMsg").textContent="密碼唔啱";
-  }
+  }else document.getElementById("bedMsg").textContent="密碼唔啱";
 });
 
-/* ── 通用密碼框 ── */
 const pwOverlay=document.getElementById("pwOverlay");
 let pwCallback=null;
 function openPw(title,cb){
@@ -532,14 +953,39 @@ document.getElementById("pwOk").addEventListener("click",()=>{
     document.getElementById("pwMsg").textContent="";
     const cb=pwCallback; pwCallback=null;
     if(cb) cb();
-  }else{
-    document.getElementById("pwMsg").textContent="密碼唔啱";
-  }
+  }else document.getElementById("pwMsg").textContent="密碼唔啱";
+});
+function bindEnter(inputId, btnId){
+  document.getElementById(inputId).addEventListener("keydown",e=>{
+    if(e.key==="Enter") document.getElementById(btnId).click();
+  });
+}
+bindEnter("pwInput","pwOk");
+bindEnter("lockPw","lockUnlockBtn");
+bindEnter("bedPw","bedUnlockBtn");
+
+document.getElementById("gearBtn").addEventListener("click",()=>{ blip(); closeDrawer(); openPw("家長密碼",openSettings); });
+document.getElementById("sideSettings").addEventListener("click",()=>{ blip(); closeDrawer(); openPw("家長密碼",openSettings); });
+document.getElementById("brandHome").addEventListener("click",()=>selectCat("__all__"));
+document.getElementById("sideHome").addEventListener("click",()=>selectCat("__all__"));
+document.getElementById("menuBtn").addEventListener("click",()=>{
+  if(window.matchMedia("(max-width: 799px)").matches) document.body.classList.toggle("drawer-open");
+  else document.body.classList.toggle("mini");
+});
+document.getElementById("scrim").addEventListener("click",closeDrawer);
+window.addEventListener("resize",()=>{ if(window.innerWidth>=800) closeDrawer(); });
+
+document.getElementById("searchForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  searchInput.blur();
+});
+searchInput.addEventListener("input",()=>{
+  searchQuery=searchInput.value;
+  if(watchView.classList.contains("active")) showHome();
+  buildCats();
+  buildGrid();
 });
 
-document.getElementById("gearBtn").addEventListener("click",()=>{ blip(); openPw("家長密碼",openSettings); });
-
-/* ── 設定頁 ── */
 const vlist=document.getElementById("vlist");
 function addVRow(cat,name,id){
   const row=document.createElement("div");
@@ -547,7 +993,7 @@ function addVRow(cat,name,id){
   row.innerHTML='<input type="text" class="vc" placeholder="台" value="'+esc(cat||"")+'">'+
                 '<input type="text" class="vn" placeholder="名" value="'+esc(name||"")+'">'+
                 '<input type="text" class="vi" placeholder="影片 ID / link" value="'+esc(id||"")+'">'+
-                '<button class="del" title="刪除">✕</button>';
+                '<button class="del" type="button" title="刪除">✕</button>';
   row.querySelector(".del").addEventListener("click",()=>row.remove());
   vlist.appendChild(row);
 }
@@ -573,7 +1019,6 @@ function renderLockCats(){
 }
 
 function renderStats(){
-  /* 過去 7 日 */
   const daysBox=document.getElementById("statDays");
   daysBox.innerHTML="";
   const days=[];
@@ -589,7 +1034,6 @@ function renderStats(){
                   '<div class="statbar"><div style="width:'+Math.round(d.sec/max*100)+'%"></div></div>';
     daysBox.appendChild(row);
   });
-  /* 最多睇嘅片 top 5 */
   const vidsBox=document.getElementById("statVids");
   vidsBox.innerHTML="";
   const top=Object.entries(STAT_VIDS).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -609,7 +1053,7 @@ function openSettings(){
   document.getElementById("setLimitWd").value=LIMIT_WD;
   document.getElementById("setLimitWe").value=LIMIT_WE;
   document.getElementById("usedToday").textContent=fmtSec(usedSec);
-  document.getElementById("bedOn").checked=BED.on;
+  document.getElementById("bedOn").checked=!!BED.on;
   document.getElementById("bedStart").value=BED.start;
   document.getElementById("bedEnd").value=BED.end;
   document.getElementById("sndOn").checked=SND;
@@ -621,7 +1065,6 @@ function openSettings(){
   document.getElementById("setOverlay").classList.add("show");
 }
 document.getElementById("setCancel").addEventListener("click",()=>document.getElementById("setOverlay").classList.remove("show"));
-
 document.getElementById("resetToday").addEventListener("click",()=>{
   usedSec=0; setUsedSec(0); bonusSec=0; setBonus(0);
   document.getElementById("usedToday").textContent=fmtSec(0);
@@ -630,7 +1073,6 @@ document.getElementById("resetToday").addEventListener("click",()=>{
   m.textContent="已重設今日計時 ✓"; m.className="msg ok";
 });
 
-/* ── 備份 / 同步 ── */
 function exportCode(){
   const data={v:1,videos:VIDEOS,limitWd:LIMIT_WD,limitWe:LIMIT_WE,bed:BED,lockedCats:LOCKED_CATS,snd:SND,pw:PASSWORD};
   return "BTV1."+btoa(unescape(encodeURIComponent(JSON.stringify(data))));
@@ -641,7 +1083,7 @@ document.getElementById("exportBtn").addEventListener("click",()=>{
   ta.select();
   try{ document.execCommand("copy"); }catch(e){}
   const m=document.getElementById("setMsg");
-  m.textContent="同步碼已產生(已嘗試複製到剪貼簿)✓"; m.className="msg ok";
+  m.textContent="同步碼已產生（已嘗試複製）✓"; m.className="msg ok";
 });
 document.getElementById("importBtn").addEventListener("click",()=>{
   const m=document.getElementById("setMsg");
@@ -658,15 +1100,16 @@ document.getElementById("importBtn").addEventListener("click",()=>{
     if(data.pw) PASSWORD=String(data.pw);
     store.set("videos",VIDEOS); store.set("limitWd",LIMIT_WD); store.set("limitWe",LIMIT_WE);
     store.set("bed",BED); store.set("lockedCats",LOCKED_CATS); store.set("snd",SND); store.set("pw",PASSWORD);
-    buildCats(); buildGrid(); updateTimeLabel();
+    unlockedCats.clear();
+    buildCats(); buildGrid(); updateTimeLabel(); syncPlaybackAfterEdit();
     openSettings();
-    document.getElementById("setMsg").textContent="匯入成功 ✓"; document.getElementById("setMsg").className="msg ok";
+    document.getElementById("setMsg").textContent="匯入成功 ✓";
+    document.getElementById("setMsg").className="msg ok";
   }catch(e){
-    m.textContent="同步碼解讀失敗,請檢查有冇貼漏"; m.className="msg err";
+    m.textContent="同步碼解讀失敗，請檢查有冇貼漏"; m.className="msg err";
   }
 });
 
-/* ── 儲存 ── */
 document.getElementById("setSave").addEventListener("click",()=>{
   const rows=vlist.querySelectorAll(".vrow");
   const list=[]; let bad=false;
@@ -674,52 +1117,42 @@ document.getElementById("setSave").addEventListener("click",()=>{
     const c=r.querySelector(".vc").value.trim()||"📺 節目台";
     const n=r.querySelector(".vn").value.trim();
     const rawId=r.querySelector(".vi").value.trim();
-    let id=rawId;
-    const m1=rawId.match(/[?&]v=([A-Za-z0-9_-]{11})/);
-    const m2=rawId.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
-    if(m1) id=m1[1]; else if(m2) id=m2[1];
+    const id=extractId(rawId);
     if(!n && !rawId) return;
-    if(!n || !/^[A-Za-z0-9_-]{11}$/.test(id)){ bad=true; return; }
+    if(!n || !id){ bad=true; return; }
     list.push({cat:c,name:n,id:id});
   });
   const msg=document.getElementById("setMsg");
-  if(bad){ msg.textContent="有啲行填得唔啱:名唔可以空,ID 要係 11 個字(或貼成條 link)"; msg.className="msg err"; return; }
+  if(bad){ msg.textContent="有啲行填得唔啱：名唔可以空，ID 要係 11 個字（或貼成條 link）"; msg.className="msg err"; return; }
   if(list.length===0){ msg.textContent="至少要有一條片"; msg.className="msg err"; return; }
 
   VIDEOS=list; store.set("videos",VIDEOS);
   LIMIT_WD=Math.max(0,parseInt(document.getElementById("setLimitWd").value)||0);
   LIMIT_WE=Math.max(0,parseInt(document.getElementById("setLimitWe").value)||0);
   store.set("limitWd",LIMIT_WD); store.set("limitWe",LIMIT_WE);
-
   BED={
     on:document.getElementById("bedOn").checked,
     start:document.getElementById("bedStart").value||"20:00",
     end:document.getElementById("bedEnd").value||"07:00"
   };
   store.set("bed",BED);
-
   LOCKED_CATS=[...document.querySelectorAll("#lockCatList input:checked")].map(i=>i.value)
               .filter(c=>list.some(v=>v.cat===c));
   store.set("lockedCats",LOCKED_CATS);
-
   SND=document.getElementById("sndOn").checked;
   store.set("snd",SND);
-
   const npw=document.getElementById("setPw").value.trim();
   if(npw){ PASSWORD=npw; store.set("pw",PASSWORD); }
-
   unlockedCats.clear();
-  buildCats(); buildGrid(); updateTimeLabel();
+  buildCats(); buildGrid(); updateTimeLabel(); syncPlaybackAfterEdit();
   msg.textContent="已儲存 ✓"; msg.className="msg ok";
   setTimeout(()=>document.getElementById("setOverlay").classList.remove("show"),700);
 });
 
-/* ── 開機 ── */
 buildCats();
 buildGrid();
 if(inBedtime()) showBed();
 else if(isLocked()) showLock();
 </script>
-
 </body>
 </html>
