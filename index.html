@@ -66,9 +66,10 @@
     font-weight:700;font-size:20px;letter-spacing:-.4px;
   }
   .brand-mark{
-    width:32px;height:32px;border-radius:50%;background:var(--red);
+    width:34px;height:24px;border-radius:7px;background:var(--red);
     display:grid;place-items:center;flex-shrink:0;
   }
+  .brand-name{font-weight:700;letter-spacing:-.8px}
   .brand-mark svg{margin-left:2px}
   .search{display:flex;align-items:center;width:100%;max-width:640px;margin:0 auto;min-width:0}
   .search input{
@@ -210,7 +211,7 @@
     body.mini .side-item{justify-content:center;gap:0;padding:0;width:calc(100% - 16px);margin:0 8px}
   }
   @media (max-width:720px){
-    .brand-name{display:none}
+    .brand{font-size:16px;padding-right:4px}
     .yt-header{gap:6px;padding-right:8px}
     .search-go{width:48px}
     .time-chip{font-size:12px;padding:5px 8px}
@@ -278,9 +279,9 @@
     <button class="icon-btn" id="menuBtn" type="button" aria-label="選單">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
     </button>
-    <button class="brand" id="brandHome" type="button" aria-label="寶寶電視首頁">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="#fff" d="M8 5v14l11-7z"/></svg></span>
-      <span class="brand-name">寶寶電視</span>
+    <button class="brand" id="brandHome" type="button" aria-label="YouTube 首頁">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path fill="#fff" d="M8 5v14l11-7z"/></svg></span>
+      <span class="brand-name">YouTube</span>
     </button>
   </div>
   <form class="search" id="searchForm" role="search">
