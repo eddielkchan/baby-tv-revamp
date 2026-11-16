@@ -3431,7 +3431,7 @@ document.getElementById("importBtn").addEventListener("click",async ()=>{
   }
 });
 
-const CLOUD = { url: "", anon: "" };
+const CLOUD = { url: "https://wnsnklermbpvoguxyjiw.supabase.co", anon: "sb_publishable_f2JFfRt3WmRChS-rtGG4bg_3hTT9W6-" };
 let pendingCloud = null;
 let wantUpload = false;
 
@@ -3628,7 +3628,15 @@ async function pullCloud(){
   if(!cloudOn()) return;
   try{
     const headers = { apikey:CLOUD.anon, Authorization:"Bearer "+CLOUD.anon, Accept:"application/json" };
-    const videos = await cloudRequest("/rest/v1/videos?select=youtube_id,cat,name,position&order=position.asc", { headers:headers });
+    const videos = [];
+    for(let from=0; ; from+=1000){
+      const batch = await cloudRequest("/rest/v1/videos?select=youtube_id,cat,name,position&order=position.asc", {
+        headers: Object.assign({}, headers, { Range: from+"-"+(from+999) })
+      });
+      if(!Array.isArray(batch) || !batch.length) break;
+      videos.push.apply(videos, batch);
+      if(batch.length<1000) break;
+    }
     const houses = await cloudRequest("/rest/v1/household?id=eq.1&select=limit_wd,limit_we,bed_on,bed_start,bed_end,locked_cats,sound", { headers:headers });
     if(!Array.isArray(videos) || !videos.length || !Array.isArray(houses) || !houses.length) return;
     const remoteVideos = videos.map(v=>({ cat:v.cat, name:v.name, id:v.youtube_id }));
