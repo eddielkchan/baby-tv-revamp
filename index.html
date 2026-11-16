@@ -267,15 +267,26 @@
   .msg{font-size:13px;min-height:18px;margin-bottom:8px}
   .msg.err{color:var(--danger)}
   .msg.ok{color:var(--ok)}
-  .vrow{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .vrow{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
   .vrow input{margin-bottom:0!important}
-  .vrow input.vc{flex:0 0 110px}
-  .vrow input.vn{flex:1;min-width:100px}
-  .vrow input.vi{flex:1;min-width:110px;font-family:ui-monospace,monospace}
+  .vrow input.vc{flex:1 1 100%}
+  .vrow input.vn{flex:1 1 120px;min-width:0}
+  .vrow input.vi{flex:1 1 100%;font-family:ui-monospace,monospace}
   .vrow .del{
     flex-shrink:0;width:44px;background:transparent;border:1px solid var(--line);
     border-radius:8px;color:var(--danger);font-size:18px;
   }
+  .cat-fold{
+    display:flex;align-items:center;gap:8px;width:100%;
+    border:1px solid var(--line);background:var(--bg-soft);color:var(--text);
+    border-radius:10px;padding:10px 12px;margin:0 0 8px;font-size:14px;font-weight:500;
+    text-align:left;cursor:pointer;
+  }
+  .cat-fold .chev{width:14px;flex-shrink:0;color:var(--muted)}
+  .cat-fold .cat-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cat-fold .cat-count{color:var(--muted);font-size:12px;font-weight:400;flex-shrink:0}
+  .cat-body{margin:0 0 10px 4px}
+  .fold-hint{color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 8px}
   .field-label{font-size:13px;color:var(--muted);margin:14px 0 6px;display:block}
   .divider{border:0;border-top:1px solid var(--line);margin:18px 0}
   .inline2{display:flex;gap:10px}
@@ -540,13 +551,6 @@
   <div class="sheet">
     <h2>家長設定</h2>
 
-    <span class="field-label">片單（台 + 名 + YouTube 影片 ID，ID 嗰格貼成條 link 都得）</span>
-    <div id="vlist"></div>
-    <button class="btn ghost" id="addRow" type="button" style="width:100%">＋ 加一條片</button>
-    <p style="margin-top:8px;font-size:12px">「台」打同一個名會自動歸同一個台，可以加 emoji。</p>
-
-    <hr class="divider">
-
     <h3>每日限時（分鐘，0 = 冇限制）</h3>
     <div class="inline2">
       <div><span class="field-label">平日（一至五）</span><input type="number" id="setLimitWd" min="0" max="600" inputmode="numeric"></div>
@@ -591,6 +595,14 @@
 
     <span class="field-label">更改密碼（留空 = 唔改）</span>
     <input type="password" id="setPw" placeholder="新密碼" inputmode="numeric">
+
+    <hr class="divider">
+
+    <h3>片單</h3>
+    <span class="field-label" style="margin-top:0">每個台收起。撳開先可以搜或者刪某一集。片多的台要打片名先列出。</span>
+    <div id="vlist"></div>
+    <button class="btn ghost" id="addRow" type="button" style="width:100%">＋ 加一條片</button>
+    <p style="margin-top:8px;font-size:12px">「台」打同一個名會自動歸同一個台，可以加 emoji。影片 ID 貼成條 link 都得。</p>
 
     <div class="msg" id="setMsg"></div>
     <div class="btn-row">
@@ -3030,22 +3042,154 @@ micBtn.addEventListener("click", ()=>{
 });
 
 const vlist=document.getElementById("vlist");
-function addVRow(cat,name,id){
+let draftVideos=[];
+let draftSeq=1;
+let openCats=new Set();
+let catFilter={};
+function draftCat(v){
+  return (v.cat||"").trim() || "📺 節目台";
+}
+function snapshotDraftFromDom(){
+  vlist.querySelectorAll(".vrow").forEach(r=>{
+    const item=draftVideos.find(v=>v.key===r.dataset.key);
+    if(!item) return;
+    item.cat=r.querySelector(".vc").value;
+    item.name=r.querySelector(".vn").value;
+    item.id=r.querySelector(".vi").value;
+  });
+}
+function focusPlaylist(focus){
+  if(!focus) return;
+  if(focus.kind==="search"){
+    let input=null;
+    vlist.querySelectorAll("input.cat-search").forEach(el=>{
+      if(el.dataset.cat===focus.cat) input=el;
+    });
+    if(input){
+      input.focus();
+      if(typeof focus.caret==="number"){
+        try{ input.setSelectionRange(focus.caret, focus.caret); }catch(e){}
+      }
+    }
+    return;
+  }
+  if(focus.kind==="row"){
+    const row=vlist.querySelector('.vrow[data-key="'+focus.key+'"]');
+    const el=row && row.querySelector("."+focus.field);
+    if(el){
+      el.focus();
+      if(typeof focus.caret==="number"){
+        try{ el.setSelectionRange(focus.caret, focus.caret); }catch(e){}
+      }
+    }
+  }
+}
+function renderPlaylist(focus){
+  snapshotDraftFromDom();
+  const cats=[];
+  draftVideos.forEach(v=>{
+    const c=draftCat(v);
+    if(!cats.includes(c)) cats.push(c);
+  });
+  vlist.innerHTML="";
+  if(!cats.length){
+    vlist.innerHTML='<div class="fold-hint">未有片</div>';
+    focusPlaylist(focus);
+    return;
+  }
+  cats.forEach(cat=>{
+    const items=draftVideos.filter(v=>draftCat(v)===cat);
+    const open=openCats.has(cat);
+    const head=document.createElement("button");
+    head.type="button";
+    head.className="cat-fold"+(open?" open":"");
+    head.setAttribute("aria-expanded", open?"true":"false");
+    head.innerHTML='<span class="chev">'+(open?"▾":"▸")+'</span><span class="cat-name">'+esc(cat)+'</span><span class="cat-count">· '+items.length+" 條</span>";
+    head.addEventListener("click",()=>{
+      if(openCats.has(cat)) openCats.delete(cat);
+      else openCats.add(cat);
+      renderPlaylist();
+    });
+    vlist.appendChild(head);
+    if(!open) return;
+    const body=document.createElement("div");
+    body.className="cat-body";
+    const search=document.createElement("input");
+    search.type="text";
+    search.className="cat-search";
+    search.placeholder="搜尋呢個台的片名或 ID";
+    search.value=catFilter[cat]||"";
+    search.dataset.cat=cat;
+    search.addEventListener("input",()=>{
+      catFilter[cat]=search.value;
+      renderPlaylist({kind:"search", cat:cat, caret:search.selectionStart});
+    });
+    body.appendChild(search);
+    const q=(catFilter[cat]||"").trim().toLowerCase();
+    const big=items.length>40;
+    const pinned=items.filter(v=>!String(v.name||"").trim() || !String(v.id||"").trim());
+    const pinnedKeys=new Set(pinned.map(v=>v.key));
+    let matched=items.filter(v=>!pinnedKeys.has(v.key));
+    if(big && !q) matched=[];
+    else if(q) matched=matched.filter(v=>(v.name||"").toLowerCase().includes(q) || (v.id||"").toLowerCase().includes(q));
+    const capped=matched.length>40;
+    if(capped) matched=matched.slice(0,40);
+    const visible=new Set([...pinned.map(v=>v.key), ...matched.map(v=>v.key)]);
+    const shown=items.filter(v=>visible.has(v.key));
+    if(big && !q && matched.length===0){
+      const hint=document.createElement("div");
+      hint.className="fold-hint";
+      hint.textContent="呢個台有 "+items.length+" 條。打片名或影片 ID 先列出，方便刪某一集。";
+      body.appendChild(hint);
+    }else if(q && matched.length===0){
+      const hint=document.createElement("div");
+      hint.className="fold-hint";
+      hint.textContent="呢個台冇呢個";
+      body.appendChild(hint);
+    }else if(capped){
+      const hint=document.createElement("div");
+      hint.className="fold-hint";
+      hint.textContent="只顯示頭 40 條。打多幾個字可以收窄。";
+      body.appendChild(hint);
+    }
+    shown.forEach(v=>addVRow(body, v));
+    vlist.appendChild(body);
+  });
+  focusPlaylist(focus);
+}
+function addVRow(box, item){
   const row=document.createElement("div");
   row.className="vrow";
-  row.innerHTML='<input type="text" class="vc" placeholder="台" value="'+esc(cat||"")+'">'+
-                '<input type="text" class="vn" placeholder="名" value="'+esc(name||"")+'">'+
-                '<input type="text" class="vi" placeholder="影片 ID / link" value="'+esc(id||"")+'">'+
-                '<button class="del" type="button" title="刪除">✕</button>';
-  row.querySelector(".del").addEventListener("click",()=>row.remove());
-  vlist.appendChild(row);
+  row.dataset.key=item.key;
+  row.innerHTML='<input type="text" class="vc" placeholder="台" value="'+esc(item.cat||"")+'">'+
+                '<input type="text" class="vn" placeholder="名" value="'+esc(item.name||"")+'">'+
+                '<button class="del" type="button" title="刪除">✕</button>'+
+                '<input type="text" class="vi" placeholder="影片 ID / link" value="'+esc(item.id||"")+'">';
+  row.querySelectorAll("input").forEach(input=>{
+    input.addEventListener("input",()=>{
+      item.cat=row.querySelector(".vc").value;
+      item.name=row.querySelector(".vn").value;
+      item.id=row.querySelector(".vi").value;
+    });
+  });
+  row.querySelector(".del").addEventListener("click",()=>{
+    snapshotDraftFromDom();
+    draftVideos=draftVideos.filter(v=>v.key!==item.key);
+    renderPlaylist();
+  });
+  box.appendChild(row);
 }
 document.getElementById("addRow").addEventListener("click",()=>{
-  const rows=vlist.querySelectorAll(".vrow");
-  const lastCat=rows.length?rows[rows.length-1].querySelector(".vc").value:"";
-  addVRow(lastCat,"","");
+  snapshotDraftFromDom();
+  const last=draftVideos[draftVideos.length-1];
+  const cat=last?last.cat:"📺 節目台";
+  const item={key:"n"+(draftSeq++), cat:cat, name:"", id:""};
+  draftVideos.push(item);
+  const c=draftCat(item);
+  openCats.add(c);
+  catFilter[c]="";
+  renderPlaylist({kind:"row", key:item.key, field:"vn"});
 });
-
 function fmtSec(s){ return Math.floor(s/60)+" 分 "+(s%60)+" 秒"; }
 function fmtMin(s){ return Math.round(s/60)+" 分鐘"; }
 
@@ -3091,8 +3235,10 @@ function renderStats(){
 }
 
 function openSettings(){
-  vlist.innerHTML="";
-  VIDEOS.forEach(v=>addVRow(v.cat,v.name,v.id));
+  draftVideos=VIDEOS.map(v=>({key:"k"+(draftSeq++), cat:v.cat, name:v.name, id:v.id}));
+  openCats=new Set();
+  catFilter={};
+  renderPlaylist();
   document.getElementById("setLimitWd").value=LIMIT_WD;
   document.getElementById("setLimitWe").value=LIMIT_WE;
   document.getElementById("usedToday").textContent=fmtSec(usedSec);
@@ -3154,12 +3300,12 @@ document.getElementById("importBtn").addEventListener("click",()=>{
 });
 
 document.getElementById("setSave").addEventListener("click",()=>{
-  const rows=vlist.querySelectorAll(".vrow");
+  snapshotDraftFromDom();
   const list=[]; let bad=false;
-  rows.forEach(r=>{
-    const c=r.querySelector(".vc").value.trim()||"📺 節目台";
-    const n=r.querySelector(".vn").value.trim();
-    const rawId=r.querySelector(".vi").value.trim();
+  draftVideos.forEach(v=>{
+    const c=(v.cat||"").trim()||"📺 節目台";
+    const n=(v.name||"").trim();
+    const rawId=(v.id||"").trim();
     const id=extractId(rawId);
     if(!n && !rawId) return;
     if(!n || !id){ bad=true; return; }
