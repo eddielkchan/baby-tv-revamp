@@ -3,18 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<script>
+(function(){
+  var t="auto", dark=false;
+  try{
+    var raw=localStorage.getItem("btv_theme");
+    if(raw){
+      var p=JSON.parse(raw);
+      if(p==="light"||p==="dark"||p==="auto") t=p;
+    }
+  }catch(e){}
+  dark=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.setAttribute("data-resolved", dark?"dark":"light");
+  var meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content=dark?"#0f0f0f":"#ffffff";
+})();
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="寶寶電視">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
 <title>寶寶電視</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root{
+  html{
     color-scheme:light;
     --bg:#fff; --bg-soft:#f2f2f2; --text:#0f0f0f; --muted:#606060;
     --line:#e5e5e5; --chip:#f2f2f2; --chip-hover:#e5e5e5;
@@ -23,15 +39,13 @@
     --danger:#c00; --ok:#0d7a32; --red:#ff0000;
     --header-h:calc(56px + env(safe-area-inset-top));
   }
-  @media (prefers-color-scheme:dark){
-    :root{
-      color-scheme:dark;
-      --bg:#0f0f0f; --bg-soft:#272727; --text:#f1f1f1; --muted:#aaa;
-      --line:#3f3f3f; --chip:#272727; --chip-hover:#3f3f3f;
-      --header:#0f0f0f; --search-border:#303030; --search-btn:#222;
-      --hover:rgba(255,255,255,.1); --overlay:rgba(0,0,0,.72); --input-bg:#121212;
-      --danger:#ff6b6b; --ok:#3dd68c;
-    }
+  html[data-resolved="dark"]{
+    color-scheme:dark;
+    --bg:#0f0f0f; --bg-soft:#272727; --text:#f1f1f1; --muted:#aaa;
+    --line:#3f3f3f; --chip:#272727; --chip-hover:#3f3f3f;
+    --header:#0f0f0f; --search-border:#303030; --search-btn:#222;
+    --hover:rgba(255,255,255,.1); --overlay:rgba(0,0,0,.72); --input-bg:#121212;
+    --danger:#ff6b6b; --ok:#3dd68c;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
@@ -60,6 +74,9 @@
     display:grid;place-items:center;flex-shrink:0;
   }
   .icon-btn:hover,.avatar-btn:hover,.brand:hover{background:var(--hover)}
+  #themeBtn .ico-sun,#themeBtn .ico-moon{display:none}
+  html[data-resolved="dark"] #themeBtn .ico-sun{display:block}
+  html[data-resolved="light"] #themeBtn .ico-moon{display:block}
   .brand{
     display:flex;align-items:center;gap:6px;
     border:0;background:transparent;border-radius:10px;
@@ -293,6 +310,12 @@
   .inline2>div{flex:1;min-width:0}
   .chk{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px;cursor:pointer}
   .chk input{width:18px;height:18px;accent-color:var(--red)}
+  .theme-picks{display:flex;gap:8px;margin:0 0 4px}
+  .theme-picks button{
+    flex:1;height:36px;border:0;border-radius:18px;background:var(--bg-soft);color:var(--text);
+    font-size:14px;font-weight:500;
+  }
+  .theme-picks button.on{background:var(--text);color:var(--bg)}
   .statrow{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);padding:4px 0}
   .statrow b{color:var(--text);font-weight:500}
   .statbar{height:4px;background:var(--bg-soft);border-radius:2px;overflow:hidden;margin:2px 0 8px}
@@ -411,6 +434,10 @@
   <div class="suggest" id="suggest" role="listbox"></div>
   </div>
   <div class="right">
+    <button class="icon-btn" id="themeBtn" type="button" title="深色模式" aria-label="切換深色">
+      <svg class="ico-moon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/></svg>
+      <svg class="ico-sun" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 .001 10.001A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v1.2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 17.8a1 1 0 0 1 1 1V22a1 1 0 1 1-2 0v-1.2a1 1 0 0 1 1-1zM3 11a1 1 0 1 0 0 2h1.2a1 1 0 1 0 0-2H3zm16.8 0a1 1 0 1 0 0 2H21a1 1 0 1 0 0-2h-1.2zM5.6 4.2a1 1 0 0 1 1.4 0l.9.9a1 1 0 1 1-1.4 1.4l-.9-.9a1 1 0 0 1 0-1.4zm10.5 10.5a1 1 0 0 1 1.4 0l.9.9a1 1 0 0 1-1.4 1.4l-.9-.9a1 1 0 0 1 0-1.4zM18.4 4.2a1 1 0 0 1 0 1.4l-.9.9a1 1 0 1 1-1.4-1.4l.9-.9a1 1 0 0 1 1.4 0zM7.9 14.7a1 1 0 0 1 0 1.4l-.9.9a1 1 0 0 1-1.4-1.4l.9-.9a1 1 0 0 1 1.4 0z"/></svg>
+    </button>
     <span class="time-chip" id="timeLeft"></span>
     <button class="avatar-btn" id="gearBtn" type="button" title="家長設定" aria-label="家長設定">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.02 7.02 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.22-1.13.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.4 1.04.72 1.63.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.22 1.13-.54 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
@@ -550,6 +577,15 @@
 <div class="overlay" id="setOverlay">
   <div class="sheet">
     <h2>家長設定</h2>
+
+    <h3>外觀</h3>
+    <div class="theme-picks" id="themePicks" role="group" aria-label="外觀">
+      <button type="button" data-theme-pick="auto">跟裝置</button>
+      <button type="button" data-theme-pick="light">淺色</button>
+      <button type="button" data-theme-pick="dark">深色</button>
+    </div>
+
+    <hr class="divider">
 
     <h3>每日限時（分鐘，0 = 冇限制）</h3>
     <div class="inline2">
@@ -1960,6 +1996,36 @@ let LIMIT_WE = store.get("limitWe", oldLimit!==null?oldLimit:0);
 let BED = store.get("bed", {on:false,start:"20:00",end:"07:00"});
 let LOCKED_CATS = store.get("lockedCats", []);
 let SND = store.get("snd", true);
+let THEME = store.get("theme", "auto");
+if(THEME!=="light" && THEME!=="dark" && THEME!=="auto") THEME="auto";
+function resolvedTheme(){
+  if(THEME==="dark" || THEME==="light") return THEME;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function applyTheme(){
+  const dark=resolvedTheme()==="dark";
+  document.documentElement.setAttribute("data-theme", THEME);
+  document.documentElement.setAttribute("data-resolved", dark?"dark":"light");
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", dark?"#0f0f0f":"#ffffff");
+  const bar=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if(bar) bar.setAttribute("content", dark?"black":"default");
+  const btn=document.getElementById("themeBtn");
+  if(btn){
+    btn.setAttribute("aria-label", dark?"切換淺色":"切換深色");
+    btn.title=dark?"淺色模式":"深色模式";
+  }
+  document.querySelectorAll("#themePicks button").forEach(b=>{
+    const on=b.getAttribute("data-theme-pick")===THEME;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", on?"true":"false");
+  });
+}
+function setTheme(next){
+  THEME=(next==="light"||next==="dark"||next==="auto")?next:"auto";
+  store.set("theme", THEME);
+  applyTheme();
+}
 const DURATIONS = {"lSukwqVmxT0":3305,"JCngDFcXqgU":1761,"7WKj1NIWtTc":659,"c1kqYrWDk5w":3585,"bJNSiDmkLV8":1769,"Ju9EExHtJnE":786,"abL8u6N-RxY":3447,"Hgu8yDjF_Ts":399,"ZgkfSSyX6gA":1487,"SLIOanXFsqE":790,"pKRV7F5wPOg":3763,"CAhZUu3zTzo":1857,"iTMqBKpkAPE":1007,"1vtkHyNpAoM":3448,"9qQuzYBTcXM":214,"8ZOeRzVx-VU":1681,"kufFIlvVw2U":3644,"UtD1ZwPHr6w":1916,"TiATnHkH8Xs":948,"bBXD2ckaBtc":3356,"PsQIlYClGsM":1750,"hNAUU7zizzU":2301,"_Wh2sn8lEvo":3403,"AbvJRLxszjk":1698,"Npdc_ZMhVBE":2550,"jUMTWGekrSA":3741,"J7pVpIVnsdc":1980,"9kpomLQYjHQ":757,"AUOdho5qkrc":3722,"iS_dGoK4i78":2212,"RAgyyqLMrPs":1167,"HaYLXP4KOPs":3148,"jmNNMWRy_9I":2043,"JDVxNZBBD5s":720,"WfjeD3M9ZkE":3777,"01U9NFNhQPQ":1571,"aU4egfJsPfw":817,"KlGWZgLh4Wk":3763,"3I_r80Abt4g":1682,"TY8CLU77yu4":768,"lSPOgNqNnjo":3398,"72tIPWClxwc":1622,"1cghMdvBtc8":852,"E1UhYJnWjfU":3522,"3tFuebwGd_Y":1981,"BVpSmHwc3jw":673,"qh8HYuY754I":3557,"hjUtpgR8pTI":1924,"z4l-I9q9PFs":651,"M1ZnpexFlbc":3329,"kUscYXfStZU":313,"DeGK7-mDgCc":1669,"1jK7cySTQaw":1037,"Kzsmnm2TVFQ":3305,"-o2uBEAFUZM":319,"e11RkIHzlv8":1781,"Pp_E9aA3Kx4":810,"yPdK6yi5gn0":3113,"ZQGYfmmMGMU":1802,"pUmDmf7i77A":814,"tDH79XxiiZU":3737,"laeJKnm7uJE":1045,"g7nc8jE5fQw":3895,"Gt6SasYBDAM":1688,"b6Fd067QN4g":935,"eSSTfeqXoDM":3875,"oprdl2cm1qo":1771,"kfUyng0tSOU":1126,"JJuZG57fQ8A":3459,"8NIGTs-Cjac":1536,"BfLlckA7Gg8":928,"xoPT5PhV-oY":3584,"gwpy98LrLUg":1889,"uRnwMwFt_MU":1015,"fR4zP-qYJOA":3299,"WCWYIW8y_K4":1821,"BfISbU2rOJI":932,"0kGh4dCZMDk":7024,"1uNQpx9h0FY":299,"U4-JWB3L33o":1819,"uLYe9sFeVzM":1484,"rjRVJli7wRw":3908,"GN9uRwRuzOo":1556,"HZdag2W_7YQ":807,"xA2qO2ypM28":6812,"QSYCQy3Z4s8":1732,"ywveTvkXyAc":611,"B3kZ_eDzjrw":3528,"FmhYkTjseVg":1703,"s7kYdA-1ZfQ":865,"RskRC43RbTc":7378,"aElbxwJ2_NI":1615,"rqCWNafgZd4":1364,"g1KCN_VnyWc":3545,"CMoVOal27ss":2003,"jwyY4uz_lmE":1170,"AcekPnOEIw4":1510,"oelsMgjt5r8":7045,"17iPXjY6JAc":1288,"SH4GjWo0xKA":720,"2Jt78yDqbM8":1514,"IjAIdPDmXMc":3718,"7TJmfkf4o08":1185,"3_rhYJeuWFM":863,"sSiRyh6M-Xo":1801,"3mGMzvVKgEY":3684,"vjqPT4h9CTk":1254,"XcAeNglJKOk":962,"QPuqhVatblc":1789,"6BkIz5Wtf-A":3563,"cP9zBfmXIKU":1309,"TuP2JTFOU5c":655,"hjgJMtcBqME":1663,"stqzbKF2mUw":3616,"YDksB4Bb9NA":1319,"XTkegAmk8J4":797,"5nuAqek1A4s":1884,"oLLzhxvI9jM":3702,"GQ6HvsOANs0":1222,"XQyHfskFpcM":816,"aAPZp8nuWeE":1789,"PK4ZPX1g-0Q":3653,"uLUdXB1teBk":1366,"FkjDVSL7mss":660,"ZgLHldV0XMc":1734,"ejdSISmGm0Q":3444,"1Heam01peTc":1128,"QOEugiJb2RY":852,"uW7rRfG97I0":1865,"ggQZBIphquA":3553,"oidCIJ4GK8w":1232,"RIQvpqnLg3I":915,"sr03fTF6jiw":1689,"O6p6vt6EFL0":3647,"3HIZrQYdlq8":1345,"zj8LI0r9Meg":1010,"vWOx1OIoPjA":1853,"yPbkPE4K-h4":7296,"HOI3lIVJsvE":1495,"9y07KG4C9zs":676,"TmaxRXHbnCw":3422,"9GgRHppWFaw":7391,"XnQ5Zr3QY1M":1436,"6Uka6zYa-LU":637,"HXnRhox6h1M":3629,"6yeNiaJmzoc":7181,"FbzfKt_taRo":1320,"y7fDsbqQ3mU":1455,"JCE1l7Kx46k":3740,"Pjaef7M-HKc":7725,"h6x7OL1MTC0":1135,"e3p91F-dmMU":1543,"yoGVMJ0gIX8":938,"6FyAJNeqW8A":3653,"RjvYou1j1OQ":7243,"ZC8cck5KDFg":1169,"b_p1MsXSCSw":993,"ftX54QTVkNY":3673,"Ss2IiebG7p4":7204,"wxwktlDOXPc":1498,"1hrA7jmKhig":3129,"w8-Au3tWw48":3613,"huc2i5Zv4Vc":7231,"4qCr83ay0bc":1473,"m2cIGOanvz8":3780,"PNe_cpifX08":3582,"mxbHhAtS02U":7430,"DhJ3b_LLqEg":1365,"i7fR-tZVkXk":730,"HFs1VdwWQMk":3780,"RQ31N02NilE":7227,"r9i_psuO25A":1280,"93cEb7XEh0k":610,"COPedOOm_mA":3719,"yiuBTsDgf5M":7229,"BvG5dTz8AdA":1396,"UrWQ30FGQqU":1065,"q3Q7lNWr2Dg":3683,"rOdFpeH2U58":7147,"A_sCngivKKA":1325,"8twFzfTqj84":785,"Ng9mYMyzS9M":3670,"ty9lyUSX7Xc":7378,"YNkHLJAQNlc":1177,"Rsxf3DUf4wA":1528,"Cp9V6HhhE8g":3822,"oK4EiQ0DS5o":7216,"Ug1O96Ge7Ng":1396,"bBAJfYGLcGo":1455,"_fST-AIFS0E":3572,"r9-61Y5_cHY":7532,"rbcqSUpAGkc":1234,"t5jrLobDE5Y":831,"hBrP8pNJSIo":3564,"mJiIHw3nMRo":7332,"-Pf9Rmf7tKc":1251,"ECF5-HqqnWE":900,"IF7WItq7z7Y":3631,"u7Pcy27Em4k":7258,"R8d9OAyAG9g":1200,"nnH2vxXiwjA":875,"ePs_CMdHasE":3619,"xsgx8Wc_3og":7112,"KuFva4iwVpk":1209,"utOTMaSharE":911,"k-DXzp7NqAQ":788,"S2CQzMMDA-Q":3790,"_2WAzmRAPpw":7298,"K7uP2xECs7A":1259,"JcvW3iM4a64":820,"LZqqEqh68BE":3602,"8SzETN7tC4k":7711,"FeomYMntedI":1035,"RhMV9szp6Ro":625,"_uYR4bkOlE0":3721,"iMCqAEGRtoM":7286,"ucmhVFJ8c6I":1220,"m4jM6o1xj7A":687,"bAYhJd2WU68":3738,"OX1zzwe8DW4":7612,"cha7NZAKps8":1329,"b14SY7_R5w4":677,"5yHO9imw56g":3598,"m9B2Wq6NsKM":7545,"-3wwlsCaOQU":680,"9PpyZ7Bofno":790,"3YUQIoxX0Ww":3727,"0ARjgFhxwOk":7104,"gzJbpoyZF48":749,"tUxvVeAGMl0":201,"6dcHt6jk4vw":3695,"Qzz0YXPFTug":7442,"pBo6-xExs-M":1270,"5CgM0OokoYk":202,"ONsoXRlkk5A":3529,"gSlZlb9aP6c":7279,"tx2-kzkvuP0":1023,"VVeJtxtJLbQ":178,"nkU25G3CAa8":3556,"0QkGsA8bTr8":7425,"lZAMsvAGNf4":1409,"aX1fsW0iZxQ":3690,"6NMB96P9tyk":7296,"-s5m18AdTvY":1219,"C9Nl9u5EJ3Y":3850,"mlApOnZSWok":7158,"wkcf-uXXnx4":1250,"kS3d1xPiADs":3471,"2aUUAGj-y-0":1120,"F09WM46jsJc":7284,"pAX9-O1Yr8Q":1285,"Gxell04KIZM":3584,"INnXzEV7v1U":7449,"l1UmKd7lfnw":1300,"ks79J1ltKzU":3592,"LRXzv9T6QLA":7345,"CiY057Sidvg":1186,"sVUWXAmh1ww":3595,"xXuYuoVgoSs":7397,"WJrM9mpEGc8":1280,"TfU9AF7T0vg":3915,"zho8NW1rJd4":7523,"vSo_fryaUkY":1127,"xvPoYILdb30":3683,"hOtTIHyoMsA":7207,"duc9t8a3JX8":1280,"q8loxsoqUTk":3641,"3SHWYDsujag":7237,"KPbgN4cLWeU":7383,"HDdnt-1iW1M":1023,"bYk_qfsrH5w":3519,"lTAdcMefA0w":7186,"PCuopRP4XP8":1451,"51cJ24eNgfY":3454,"DJtQOCWEBls":7331,"yONSL3JEfJo":1141,"My2RKkbT4cM":3424,"MRosawYXpLY":7167,"2i-nJzjVi70":1397,"ngGGuUA8Kfg":3536,"WqEcHz-J-ns":6877,"di8m3MD9mxE":1374,"wKLLmIikogk":3959,"KTWfHYHhp8w":7255,"nfG_NSHvo-A":1113,"EZQBxFY4I_A":987,"5LvLRwMeqXI":7253,"4Q8dYY1ZRko":1442,"ZKM1b6bOvN8":2469,"L_lyY3MlE1o":1319,"zDj81StVK8o":1448,"1S1PFdrN1tU":7288,"dhP6vitWJN0":1189,"24tXsNP5j8w":1063,"emH3TLMWg8c":7382,"S-5etS_bh1U":1242,"q3SbqIR4s9I":7221,"wA9eKHkyeK0":618,"mww2SiOkYnQ":1237,"zNZMZq4BQRE":7207,"08zEujDBCQk":817,"8aKc1O2NnsI":1632,"RgX88gOggMQ":6990,"wfPzpxsjGMQ":1044,"Uk6p1bIBJCQ":1269,"97_trZU3YbU":7234,"1yfn1MmU9K4":673,"AXnVmueDcEo":1241,"Nry0u9-4f4s":7536,"C3bU26_9juM":1132,"jV3O95u_rBA":2257,"HeG7WCTpaoM":7208,"Lsa_qgDxSE4":1317,"tz7U548Ha_A":1798,"GBIveuyREPY":7227,"Qg3Wxxwu-Hs":839,"EwrQGolq2lY":1302,"G4wa0_D0gv4":1807,"U7tstLwshGE":7243,"R2yU5we_Epc":627,"iW4HMPeU3rw":1824,"28ZYY0UEl9o":7313,"Yvvj2AF4ncY":864,"on1gYbeQSgc":1947,"jqbUbwarpeY":7789,"9ySM5DdkP7w":670,"epywuTAxPno":1669,"YbmndLIY700":7133,"GdqAcupfwY0":862,"WFjEXk2LUMI":1764,"NLkE6H3ceWg":7701,"XX5iF-fW_iI":649,"Jy76v23BbBo":1805,"9vbC9mepXjI":7067,"2l9L4uCZ6Zk":676,"dnJSnecfHR8":1847,"ZfNBMKepcKM":7133,"NowoRUJJadw":750,"54FCuiP71mk":3126,"OdQom1N0Qao":7252,"u5TMGeZjYdQ":1863,"uf0e4RJlpO4":2106,"RRzdyqW4BAA":7397,"ztwpQvW5Zvc":3777,"qOj9YrJUphU":1804,"5oO1Blz-TiA":7426,"5UNWkv5fePw":1887,"GaapEBOx-6o":2031,"2D8GXgum5fI":7508,"RVzQiyOcrNk":864,"BmdNPTxbmww":1960,"Vcc-AJzPQpc":7412,"F_qyAUFEfoQ":814,"K5w3EIHyGA8":1911,"-X_d1WoDK5c":7304,"_BMk1hDrwaI":893,"0LT8gSpurEM":2210,"9_IL9aHaU8Y":542,"_x9oW5Q8sVU":2285,"dLPpNMBm_3k":1856,"aLBC_gJ0sTA":142,"Es8yF_YocxI":1700,"OG8PVwWT0sI":7298,"9AAGGxdFQqs":887,"EC9LK5Tk12M":1941,"spfOL5psLPU":7457,"IuYxbb1pEsg":1578,"UqqX138WfC8":1687,"0-g1o97t9hY":7200,"DborfDyg328":1033,"NQXvYXPdfVI":2048,"Evd5-no95R0":7032,"al0gcF__nvM":2460,"I2kyBwobtVE":929,"K3BunBeCfHo":1910,"CetTR8HQvE4":2049,"JhXSsh9shRs":911,"44AkVNl1Nh4":1619,"Twn31bHJW34":1994,"ooEaqf606YY":2006,"qZO8JxL6PdU":1636,"ZfCgRvEJOoc":7453,"siHMRSvKbd0":1978,"-31WtB2bjT0":1750,"KfI2bERBB8U":1743,"pKEnO5X8aLA":7316,"EASU_vonFJc":1850,"pVsEFNph-BA":2410,"03CxRqbSt2A":7193,"cBxsHaINxCg":1856,"egEDLnazNB4":1786,"gfgcNghfnBQ":7220,"bjLH5QDmi4Q":901,"AGVZ-dQTchI":2221,"ayqiBEw8YhQ":7129,"2XeZprT3wTM":896,"IFWZmh5QyWY":2234,"PXFaFLVDG48":7205,"nc_wYF1KPOA":617,"Kfw8azBDBAM":1994,"FnplLxHcaCM":7256,"TuSyhT0TNtk":742,"10ZWcVmu-Dw":2140,"CxriIgU67Vo":7742,"KOtOp15C_U4":612,"9OXuHd2p9AM":1731,"52xn70GN-EY":7248,"yH6L3RDJuhs":551,"DbPMC3msWUo":1816,"zQmueP5JEW0":691,"Tq7H9ABSMvk":152,"pTHC2v-bZ2M":7776,"QiMg4T0REOg":662,"VUpDO8WlFyY":1945,"RVZ5C_Z2MyA":7392,"-VxafpTkY9k":691,"lov19SKJEyU":2453,"89L4lI49xfs":7117,"aoRFF22ROSU":578,"WHmQgjYgBFI":2285,"BEHBro67Pfs":7488,"FE_mQJHMe1o":719,"SPneqXTwCQw":7317,"G3BWWgGqt_o":710,"LIg1-A4N9Tw":1641,"z5txUmn5hRw":6924,"yuwvCJw1KnM":642,"T_DUpD9xT3k":2655,"FPSv0vwfYgo":119,"M3H9KCLuNWg":7318,"zo7vD4iJbPQ":637,"TYe94RanegU":2851,"wkpOa4VlkZE":7817,"606es240d8w":714,"8mVm8_ou81g":2808,"BZLCsW_Qo-8":3800,"NfS4guJsuSU":7419,"uB9fTtKjWAk":3781,"D_liE6Mgeqo":590,"GabBMjgZl-w":2687,"1EpT1wllTm4":7198,"5_MLyICV6lI":2476,"DeMd8RjVKq8":7046,"oIiyjJluyFc":713,"4A3v_nG--aM":614,"N5jJPHzGHRk":2906,"cSMAqJzs_LU":7233,"fNa-HdvlZNw":2480,"NEJGBS893wA":690,"LHP8fc_pL8Y":583,"FhtYAKkVuU0":689,"1FqkeW_Zzqo":624,"i3vVN5OHfpg":2173,"NEhQDeigAeE":2337,"U2EZe7Gktlk":3565,"Bv4R0s8GoZg":7752,"w5NoKffrnww":2353,"jk5VLvz3GLY":3559,"C5JHF4zmZEA":2205,"nvO6XM54hgo":11343,"8SBWZA_vUrQ":3964,"H77G_queM3E":2217,"8i4lHf0d43I":7944,"2coz6Oju920":3716,"13I0CFexsbg":2080,"0W-W_9NGWLo":7289,"a-HbSbMhQYo":3691,"NQQ36hBMcvg":2156,"W2VIc5kNVyo":7163,"0llxJf8rae0":3709,"ycZ1trEbtaw":2117,"5kdvyejatss":7066,"zI4MM5p0MSY":4267,"NxOjl9bYN7w":196,"YjVZ4cRIzec":7894,"vp9GvAcvrjo":2560,"Lvr9yUw5En8":188,"n7CJSRfxsqg":7269,"1gsYTp17lHM":4080,"gvLfM5DnuBA":198,"t47w-3j9LeA":7331,"E2iBRXNL8U4":3540,"QnhViIhOmH4":188,"Klsv1e_TyC0":7372,"ws3vBso2FO8":3788,"w5kGb-Qg8ZY":202,"bZgeBSMWmfc":8278,"_QlKswn7FvE":3881,"tTxrLfiqhBg":7610,"QsixoVsg-QA":3482,"ZlWKWc_8GGc":6935,"jupXN0Den-M":4063,"2T1_nkpRxR8":10960,"kd1xexoHVrc":964,"xpn6SouQOJ8":7389,"-HRAvc7WeQ4":1425,"ORXf5MfGMGE":3698,"P4bAQ7e9s2E":7185,"dSDYYeq69lk":11129,"vDiZW5ZYhbA":554,"NRjM8ww-QEc":3704,"M_FhU5Qf8OY":7150,"pZTMWeUSNFk":12343,"rMnjIC9_0Q8":1445,"Ax32hHAFFy0":3735,"EK_rnZz97SQ":7515,"pPBqmnxMqPc":11139,"X8kjZY_hW54":632,"e5ov2Mf5MdQ":7633,"onKT_0SpSBM":10903,"gRRRMVFjvKQ":670,"DCHE7SxSju4":7705,"RYv0JJdMSkk":10863,"qnOEG28vJQA":571,"A2voWhSVYIc":7810,"7WN8DavxXhk":11370,"mKYSsPGBThs":984,"0e0n3YL3wR8":7131,"HpZsRLea8gE":7270,"rXJ-kBjDemc":7247,"nYmRRgP3J50":782,"U8ZQZK9F69A":3800,"L27NZ2Ss0RI":10777,"5r4U9HZxB6Y":3833,"bmbT7psEcwk":897,"vDOKp3KLhBI":3512,"1G03k-EADp0":4050,"b5MXhpRWM6E":3543,"n_u181NAdS4":897,"a6BEJ-QQ9oQ":7663,"kN-lfHr3pd0":3645,"mjq68olGvwI":3813,"7zuxAGIHlGY":10871,"GqnFEgl-VZM":2449,"PN64lnMG3iY":7397,"fSw0V6AkHD0":3772,"dhoGFt_-LvQ":3692,"1Vm261ktB5w":733,"x8Dw0A5jB4Q":741,"aU7ZfNHoxWA":7218,"98DOfg60uQQ":4363,"b_HI0x48xxU":7335,"MMPcLLzAYdQ":628,"L8EoIExNifU":4308,"1x5DYBUnBVs":756,"9qTtcXRjVGo":4611,"oTPTJyqO4jU":7251,"-LoWNK30cUk":1070,"fM2LP3b3uGg":3539,"AC86to4IFY0":3818,"fxI0a8hN9Lw":7226,"1id-Zy4oqj4":770,"gD6JZebTOJA":3625,"yXVe20Yjw8A":895,"bg8yAH9jcbU":7366,"pQ7wMD5KN8Q":858,"g3Xf5wOS4dY":769,"aMN7n0rifxM":8325,"PHCiZRGcHa0":415,"1xKY7-qKPTc":3967,"sCTHfNyKhnM":877,"3Gzvp4FPO9Q":7411,"mTncg6sr8Bc":937,"HSoXY7l2cx4":92,"5VjotWUzzAs":3712,"TEF5CvnH4tA":3834,"vNSraZyX8N0":7166,"_Y5A_LSEzRE":2466,"No9KJvi8fvg":3545,"5PZXn_IjR6g":781,"Y1Uul9UHw4E":7663,"VAfGGO08GJ0":1223,"h8Qezd-JhYs":3748,"m4U9st7LxcA":3659,"aaP7vgj5yzs":4545,"hFOpzb_hgIs":951,"rwz8aC8piCs":710,"LOiC7Uy8zpw":4009,"-ZPKNslksps":980,"5wT7yPfeAXs":2118,"R9P81fHXgF0":832,"euwB9D-D1UI":3575,"nn8yVswKzB8":792,"kTSoQoGHVLw":2456,"Iag41UNUS28":3706,"Ep0PU2qyZ5M":4070,"wgdAmdQkwJQ":530,"ONpEUK1MGrU":2336,"UjDGxhxjaYs":703,"Zn-J9wiqI0Q":3621,"DABFdS4F2Is":1030,"nrTMqASjQ28":2322,"05sAcyU1RUE":722,"ppqg-VYrCCQ":2304,"aOqYmcGNijY":3854,"NjNaJZKTpd0":2422,"3UjK-9y7OwM":2013,"I8NH9aZWkbM":821,"m0Vio07_1ZE":3709,"pvAlWyq96to":2162,"0YIhJMyU44I":2167,"_jlph8QbzWQ":994,"wCAtQxKwQKg":3707,"B7znVuE-uAI":623,"BshY3rm3hNw":1006,"FKcvM_oZw-I":3713,"p9ROe14Gk5o":1200,"dmKFfnU_cKo":2407,"ZBznu2wORcg":823,"rvBtLRhrFPI":3710,"g66Jb9jcNu4":766,"RoUtKsPdSDg":2442,"ZHC2zAIe0Is":744,"0PZeP9VFKzs":3576,"NKIuGr4q3NQ":929,"UXjH58i6rsM":2270,"tkHilpIa0rs":823,"ZXLW_nE8VzQ":3721,"7uq3hlAY76M":661,"voh0MEYaYp4":2170,"evVU9LselZA":743,"9ABQjdxAJd8":3938,"lclj_2RiwWc":1002,"lOqurezUtQk":2313,"hlDUQRxDYlw":977,"_O_kV75hhXU":3760,"d3p6Z8A7VZ4":779,"gXuKtV3_VBU":2140,"xC8vUTlmBPc":869,"P34ArHwmmkc":3599,"unxDeaxBANE":1853,"SpsTxsXTSng":2183,"vhpfzbeby5o":949,"_IBOoOUyJ3M":133,"-SR-2FG1h5o":3659,"k4UaiPpF4Eg":2765,"2AbdvnLyMe0":838,"duLFtsFRw-I":4252,"dMctdZahxCM":984,"xgmuGmOcND0":2092,"BX602sxdBhQ":735,"7zjSGRrlO9o":4053,"HAPM7NfY9YA":658,"HblODwt368Y":2311,"3FVXQwY_dNc":786,"ugN47U8vO7I":4035,"WgZNvtqFa4o":710,"xA_Hq5CoBTE":2233,"dQncHtvkAVQ":858,"ooMZT284rWE":4069,"HElJx21m0CY":1110,"ChqYyfoQooc":2514,"KeYd5E0uzCE":766,"Y7XRXrEO_3g":3815,"dvAJabmVz-Q":752,"i0B5ioVsF2k":2750,"hn8bOCULxzQ":1061,"8-lYQDqlwAc":3654,"WKh2gLLV_eY":645,"iaD4AFFO0Gs":2605,"qmi8vLfDSws":972,"7MF1w61ML9k":2691,"tdCguT-xH6c":693,"N5j_feuBKrU":2691,"aS2vAaqqBDo":946,"kv2NbV1RDQg":3521,"TEd6Wlqb0yg":875,"7NDmNTF0vmQ":3742,"-QvgQpSVkvw":586,"MK9-RWlkDYA":3732,"3W8sLlINP0k":1109,"FcAEanF1BoM":2215,"7FO_aN3Y6NM":1081,"cnWiiCvDJZE":3566,"iNCpu11V0_Y":939,"E66nu523nFc":1972,"euHgMiKx7Po":2158,"_daXbxOfDwU":4111,"y8PC3hEKXyk":766,"-7YsLPILjvc":2481,"AK5gmD35VOU":3949,"nz4RT1cSOeo":1434,"geql6ax15dM":2199,"-zLZHqSNWgw":3820,"8p7OmVXokxY":887,"frRdFtUp8Rw":2058,"_x7Kb7I40D4":3555,"1ZBRf5qBAGg":1324,"paSkCpEzT9Q":2528,"BZLICAQbVfo":3993,"7A5HnRqbBho":2455,"pQfYNek9MNM":2047,"vNFUMOVgfYM":7779,"rSuZ_trJH1k":771,"4tx0EhH5Lbw":3936,"eA_KkWHHR10":2790,"0Syij3leYbs":7398,"0SMphrbPbe4":608,"yj9cl3Q8nZo":3660,"P00faVc0U_M":2566,"HyBul7TUO_U":7841,"XGfDZ4dQMKc":824,"F8JnFhiUldU":2385,"Wg3vUbBrISA":2385,"ejzF2tBATOA":7759,"QEcNKN8J8qg":848,"HOVQXg9GgdU":4021,"A56x7nbm9h4":2557,"imGyeDcr3XU":7488,"5PK6Cc9wXO4":1076,"D-16D3dYy2s":3400,"kXyTSvCbD4g":2683,"qDNgXRV_OZ0":7526,"2LNWNiatlLY":807,"Wr9t0tqYlRQ":3680,"ThS5OhlXReg":2759,"hAOyMN1KX-A":7802,"rbn8vNHbPbE":906,"oVHNIy1bb1g":3710,"4ydLSH2i6DE":2588,"tcVdMHF23_s":7441,"bY47YPWuias":733,"EAmjUvxdbs0":3823,"Fdtj1Y5dDwc":2568,"PoUcjy8G-Uw":7057,"tnR4rTsZymc":3786,"FX8urYxOq3w":2328,"6W3kjBLGri0":227,"wNdU4Zppp-8":7567,"gWDRg7u1KKw":225,"4RtT1gm3Dko":3832,"TChbAnGaALk":2601,"iLfQXVjcFkw":7883,"GW7V6YMjGCs":225,"mv0M4orvlvw":1122,"sC6qeh6oLVU":2717,"bzQO0gHjHJk":733,"dShwWXiCPog":4081,"8DGKjUB6YjA":2286,"3cppAqMQAUk":6987,"-8GDPaG-H1s":1773,"wI73_Yx4ioQ":3837,"vqkHa-Cw2kU":2415,"F6tUvA_k5rQ":7079,"vsVjAlzWwHs":1368,"qZWcZPLTBZA":3773,"nQGlTU-pnk0":2400,"0WvoMH-sosk":6881,"nXOmaAftTiw":696,"RG-Mm63eZWU":4145,"k_co-6dqgCw":2556,"MumcUY4Mp4M":6956,"raVrHH4C1wI":909,"KJggYrewrOY":4149,"PUzl6d7x7k4":2631,"LjeosQWcRVI":7400,"KO5xhWtRRQg":1001,"p_BKavb9Tmc":3733,"uC_I_Bo--Rk":2487,"fD76zUcpUn4":7237,"ugImuklgY-E":227,"nUrzt3Zm1KY":4180,"ZHv60a5t4m8":2499,"-I3JDopHu3U":7384,"cIkAfvpk-P0":224,"HCkQPuRDbt4":3628,"IhOqNAixBh4":2503,"6jYAvuRe7-g":7395,"teLu3SgkpG8":223,"FpNE3V2Dn6o":3689,"1joatYUGumA":2418,"IP67-0cL_Ag":7391,"WQMMM4SyacE":218,"v3FeEkqKFCw":7511,"rV0bHE5GYOA":2668,"Aj6rg0JFhxU":4537,"M81CWLAtHIU":7311,"Em4OBK9507U":221,"nHn2X8LD5Ro":3816,"OcX2cC6clMM":4192,"jE6Eoil56Is":7052,"xCndwPpXqAc":226,"fW0crdCRIP8":4247,"YYe038M_FGo":4344,"0nAkwdJENL0":7212,"URSKk9dL6AU":221,"cYZBbOhq7XY":4219,"_3ORJ2X6tJ0":3525,"MYYhZkMbcj0":224,"7a-YYiaLUfk":7098,"Z_UQDWL6FLI":3803,"6CgnO20zisg":4201,"8Gut6xqXkJk":220,"kuNAZwrBn_c":7074,"90_kqcP67NQ":3467,"FtQavremZQQ":3862,"oiqVZVrO_EM":221,"oCEw1nZpPQU":816,"c_a_J80ivQA":3611,"UfHm2X_kxlg":3798,"D_n1B8tcR1I":638,"0Q8V3UCunOw":803,"_Xed13EkMO4":3956,"dR8Xgkw1Nlg":4051,"Q8DKDrI8_vE":223,"Wknp5BilEJ8":773,"moGokaDVnBs":3843,"aBWN2Hpizwk":4108,"_E7nxWDaoIA":223,"kYS0JVdgj8U":882,"8SZPdwgFpok":4274,"0IOy1HZZ2nw":3693,"8O_FGpTOQrA":220,"zuaXY9YwGA0":943,"xgDON3aQt9c":4324,"uvi91zgL5rQ":3591,"S3gbquuWS-E":769,"AFx7crHT4vM":3639,"MYQjCBQfNCo":3635,"6sIpinFqKbo":654,"Pftn5MQtCF4":3741,"-eTe9WoxwvY":4000,"BUWHavVvfDI":791,"FxOxIzdGXU4":3615,"cXHoZoQAaa8":3644,"I4ttVbgda6s":3625,"1wIiTc4xV0o":4416,"qZDSu3IU3D8":4270,"AT9lwVbGHKc":191,"PYxYFBn_T0A":3510,"m6ppqMuoMvA":129,"y85NnOrBeWc":192,"eAFu0ruyAGQ":3734,"Gl3xNrUKlPo":3571,"m6FLkUsOmuM":192,"RFoOwaRsHWE":2438,"9lx8ks9KQJY":2335,"zxDUf1owThc":192,"gHNZLeR6W6g":2773,"oG3IGrUbgq0":2715,"15IJk0j_4Vc":195,"IGXwnm5v928":3637,"dtVtJ8g4ALA":2069,"bPxezvIH7AM":1275,"9zhBKUzGaLA":3132,"9jwBK7_yQ-c":4009,"PhotTsUq5UA":190,"mF8cNfKYdoA":2627,"UJ2TEFkM614":5135,"LGjpXAYFH88":191,"9jiiy3F7fWI":1456,"OTUvdLmNkEE":1066,"9XEk7BGWCJY":192,"OPP89aGJpDA":2285,"RseWRaa0Djg":1503,"RVSruDC3J4k":190,"OEBwcm2q6PM":2549,"lKGdjhh11ks":3307,"0_YVBlDLh3Y":194,"7b5XK4plIw0":1133,"DniUZlnYzoc":2711,"-tqOoJjLmWo":189,"GEkFOtRGrI0":2836,"cCJM2QV74UA":2257,"FxRQEyRCj5Q":127,"t6puECkuQOA":202,"5FlEQOS6sYA":1872,"IhDz_9QCM8Y":2214,"5RBv6inUtX8":192,"e-xmcPr33fg":2432,"fLssAdxpP0I":3100,"ya5lKqEgNVU":195,"Xem7Dx7dy5o":2200,"Jxrr4fDtn2I":2926,"GTTLs66Gb-A":190,"8m2QDpizvrw":3336,"ddrZ-H91q3E":3160,"2EEn1klVLRk":192,"AWave8hqtgA":3804,"McEbZRaO5rc":3727,"Fgy0x0ck_sc":1265,"_h04iZ_dHDE":2296,"Sz5Vq9tNy3k":2765,"zhJGl_VZKsU":192,"0NfhSYdOGA0":3126,"meuZkajChL4":1855,"lOXbsxz8yos":214,"Uv_gydbdkqU":3192,"cq2jX7RgpGs":2662,"Xy9yOFkpKHA":207,"td2o4WiFSDw":3149,"lG2XUJvCnHQ":2465,"_i-a1TQvGCA":113,"-ThcQa-wmI4":2975,"4uE7a4kIFBg":3210,"g9Mgy0TBGW4":204,"IgggSs1uVck":2866,"8HEeCGk6tIo":3750,"Mgk0kN1bDak":206,"Qabfvf8-9Es":3524,"mjUpf98Ccpo":2835,"4Hg9b_DGXb4":197,"F-KV3u9VHoA":3372,"ZilxxxEyKLs":3789,"xgHcKWB3Q-o":204,"ixbO0tbwYDk":836,"t8slkMcFmgE":2819,"PcMHmFtprfo":3057,"hQDPg994bj0":1286,"r7HT5e_VW0M":3521,"7oXgVbVqcfw":205,"g_0sa6O4Fng":4004,"DcYi-lndx5Q":210,"hA8vwo4_5IQ":130,"EjF-VB9EMsc":2803,"zqoPoUYxzm8":2843,"3b29kjF-uFM":3292,"MMq27GjgLb4":3557,"yX7yYKV03Ok":154,"dh1fqv8uiVY":3240,"8XsmFl_4OmQ":140,"4bJ9tsNy-MI":3902,"mxA7qmcFNRY":142,"lgqoZKHCY24":3374,"nWCVqzQAQKY":3395,"7-rCDRBgV2s":3323,"i-yenlRwJMY":3544,"6zrwewlaaTU":2762,"Ga23zGcVFlA":3467,"JRAUEmuvHmw":3097,"l2xfQjh6CNE":3218,"RquBF9kidg8":2744,"3a6vNf61SIo":2865,"iYR10Uc7KZE":2721,"YNsojU4_-f4":3388,"57goIrbj_l0":2803,"IzweT1tXTk0":3222,"6F6_FcygOy0":3270,"yEh7_nUzcmI":2999,"nLsN7NqYLyI":3095,"4wqV0zu5Mb8":2963,"hVEz4Dsuhng":2747,"n1sTb_JmgEc":2974,"kKa3AGBALm8":2509,"6IXypeV9aOM":2312,"BQA5ZaJG-LM":2519,"BcL1P4N7mmU":2972,"70LdbA8uEV8":2830,"9ow6-wuJqmc":3531,"lQDzDmpFPfY":757,"BOdXP29Jcxo":3004,"7FHEYtpPmcU":3870,"_ftsTZf6g6c":2843,"dPRN0ALelDM":2730,"wVjpfvd91_Y":2630,"0JgzM99db8k":3273,"Q1W9eS11DCk":2966,"WSVBATyk7Vw":631,"tBqHx7feHzM":2991,"dXuO3_jnZXM":2795,"vTY0L4iTnq8":3080,"uYIJBiXMC3c":2770,"orvw8psxUfg":3300,"Fj8dWl_mIhI":2981,"RVTGJqzXY-0":3665,"HuB6HrxyUcU":2598,"BM-V6HKqOPI":2714,"ZL6niOq_lfk":3099,"XUrL44wDZFQ":3068,"5FV91_ABlbk":3132,"w4SOcmELsm8":3138,"GpoZVEoDtxI":2878,"Iou11VKqvnQ":3011,"MDbU_ggxMG0":2960,"z9KOM_XXipw":3409,"e91GqcbWCu8":2780,"elYWnyAqWvE":2930,"jFqxAxnWylg":3177,"tycwpS3HzXQ":2793,"obC53U1rH-s":3542,"_2d2G2pp3nc":3114,"GOrSrnetqss":3178,"Xf04ZRrKErg":3487,"kf9DLfHzDZo":994,"b_q2gxy0TCY":3246,"XJG051ZBWig":2868,"0ULLpVtT2YA":555,"WZQhCYnlqCc":2619,"irPDn8LYw8U":2705,"6U3ko5rxnMo":3019,"ts9EvrddwnQ":2802,"3eM_ag_qL1Y":2842,"vnGsr7Yk9Yg":2996,"-YENalqoOqw":3026,"pIeFOvss-8k":2794,"wtamAlKRJT8":2258,"ZWGP7-JVWfo":2618,"YJwUrGAs0Zc":2761,"HC1mEb_7jg0":2699,"COIw9e834Ag":3174,"asSpAr1wbbw":3109,"KNzL9gvLFx8":2794,"hcSd-Et1HRE":2717,"Nd-J-t5rZDI":3577,"2Pa1qWkT0EU":2886,"kK8ADbD7J_4":2704,"xwsrmcYRF_A":2572,"Gyn_q7zYKm0":2838,"nYQQtvx0PT0":2918,"MkDgT-bOgRc":3146,"OfuJfjMw8-4":2817,"a_xxkhtUonk":2547,"dyMWpyA-O0s":3299,"u_ktVeXuJig":3342,"TvJ0cP-Bly8":2723,"-FKJLk8oXxI":2662,"5nxQhQwrnrg":2850,"0FyDyAL7PcA":2794,"-RYuEzgUG0w":2332,"ubr9M5BNcbk":3361,"T9rgXd64AQ4":3007,"_hb84apudcQ":3379,"9NyUiJzp54Q":3031,"JKf0oVXKV0s":3253,"bTVxzjdmxy0":2717,"D2XFe_ucVNc":3411,"EjCv3ebJBTw":2879,"Q0Oi-r4jMJE":2772,"Q-cdM_jY3K8":2968,"GU4il0Hk5vU":3002,"UsOJiLYeB9Y":2892,"ODTJ0adxmBc":3109,"bMlX7ZU0P-4":3055,"4M3OQeWZn5M":3145,"2Hp7ROMvJYE":3350,"m2DIDzj7nBk":2955,"tEh18MnH3BA":3081,"4q6zPX8dFak":2907,"JOabbushamY":2701,"aC9IcXIkTRI":3158,"1vuhBjThr0Y":3102,"7J65syI54Ho":3125,"3A6CvU0jkZg":2764,"eWQsSY1jsDA":3361,"c-EW7542S1I":2204,"X-fIzmWXPqg":3131,"0MJDao-J8uo":2839,"Qi24aLl6zoQ":3074,"dA1wpN0RlY4":3015,"gPi8cZS7BKc":3127,"Ycp5oXVRuPc":3089,"-dSw6AngtXs":2731,"UtLZHgaM8Qg":2287,"rqaXb7tOiak":3262,"YgKsgpMhhCc":2740,"0DiKJZ4krO8":438,"u1sYaKlFrWc":1528,"MutkoAXJcnU":1486,"gpn367VW75o":601,"EL7LNGzL0cc":4170,"TVDVDfP79tg":1585,"myRZ_pNB3B0":1344,"Rq-coOBsOgU":4021,"uhHmR7zlGbg":1776,"6SZwShdOGlU":1351,"CjbC9wAErts":1503,"5tCu81Ivpc4":1657,"unFi4BnFda0":1065,"-VA-DKxxio0":1392,"fhzRq7knmcg":948,"2arNc0AaaM4":1895,"r7rBvIAMljs":664,"H7FUoV7R_w4":821,"9Y3e_agATB4":4773,"cG4WXPO5agg":1299,"BkANTp128rc":843,"mu6RrR4mIMQ":524,"0ElfdZfW8xc":1217,"oIYr10Nntbw":927,"UksLudzbUdU":895,"__Se7eA1SE8":3877,"zxA49vlyop0":737,"e7M2Vo0GrAw":603,"MGW7V88HxOY":825,"yscr5dcwbic":368,"d450fEnnb-s":952,"KuLy3mePMnk":4356,"rZgkDxbEXZs":831,"-yzEdyyWKvg":775,"hCKm7y-npcM":674,"sHRWUTHUELA":331,"HDpna0IiHmA":4232,"xW14hQrjDdY":948,"YQCZRQQ19E0":620,"WMo6SrDmaGY":678,"6pqCWWJs6CU":889,"h9kgnG7EiG0":3393,"98AP1-eJX3Y":514,"3DBfEqTkvCE":1217,"qzfXqBi21-A":762,"q1fjTVPz0h4":301,"DtFDan6_LFU":3951,"xc2HkBH3PtM":1220,"Jwu0yNc0tXg":925,"YhXF2QXNbWk":601,"FXqZ_W71Mbw":1207,"_D2gsEY8f6w":2090,"lvYdi432OjQ":322,"vHQjvrFUdrE":660,"fKy43DZ8NU8":847,"Wh4Jt92riGI":290,"5MMMOH29OzQ":2833,"o7WRp-6lNAk":736,"hMS02SgR6Is":1253,"odTEVFBWJ68":1369,"LtZ9pB6cWuk":459,"llQnOrvPo2k":423,"Go9nXFVbFDM":511,"J_pKNAldA8I":780,"7b4CJsTRmMg":1570,"hNAC-fVAyGM":243,"-GtQN-a5IUk":320,"Z8oWnCi_Vaw":450,"kUgecAkXOB0":2558,"AlupMaSfvWQ":441,"vH_gHahUIMA":2866,"TX-jjzzTkhk":665,"GkRt9woaGV8":475,"pMbg_SxC6uY":441,"J4ST8F3_3kU":1311,"ihIVEO9maWI":3577,"oO4Ju1Xi6x0":206,"_Mhem1xH2aA":855,"mwElEhIF8NY":425,"-zOquCk0adg":1740,"GDQovUTdvyc":1249,"EjLv0Fbfn_M":482,"G-Pq1XLNTlY":423,"hAP0e7XpG98":345,"uXaifgOV_8U":904,"O5t7yq7wmyE":509,"i7E1hL403Jo":1345,"WzQaiGs8Bs4":240,"oS7zHMS-o1A":332,"v6jvc3ukqL0":513,"BI_0ROCsmCc":71,"TSH8ChxUZM8":3817,"OQ7Ht6NV2ZM":1256,"4lcLvrYEbT8":405,"CQQImhSVx1o":303,"rfG7dGlD9Pc":366,"qbVo6EGpVH8":3544,"oTLZ4Essy8o":245,"oMNoCylTnlA":558,"ctK6mNyVpHQ":1273,"1InSbLNhQAs":307,"YqoeuV29Occ":369,"DuV6uJbD8Is":281,"Vyu23gNly5E":381,"uKF0OxIGWTs":601,"pFaxYleUATc":3708,"rvirXBov-4M":756,"cEH1RpPh_l8":603,"GMKsxTqQu5o":431,"Da9EG6F38Qs":1953,"e_oMxWVcbk0":283,"K8Pax3y2YnM":1677,"LH3h9bNWQ6E":346,"I3cNsu92nHE":1303,"0Qww3JWkdGg":188,"x72mFO4QCtw":292,"bcshwUhRt_E":481,"D5IGPerEQxo":348};
 let DUR_EXTRA = store.get("dur", {});
 if(!DUR_EXTRA || typeof DUR_EXTRA!=="object" || Array.isArray(DUR_EXTRA)) DUR_EXTRA={};
@@ -2904,6 +2970,16 @@ bindEnter("pwInput","pwOk");
 bindEnter("lockPw","lockUnlockBtn");
 bindEnter("bedPw","bedUnlockBtn");
 
+document.getElementById("themeBtn").addEventListener("click", ()=>{
+  blip();
+  setTheme(resolvedTheme()==="dark" ? "light" : "dark");
+});
+document.getElementById("themePicks").addEventListener("click", (e)=>{
+  const b=e.target.closest("button");
+  if(!b) return;
+  blip();
+  setTheme(b.getAttribute("data-theme-pick"));
+});
 document.getElementById("gearBtn").addEventListener("click",()=>{ blip(); closeDrawer(); openPw("家長密碼",openSettings); });
 document.getElementById("sideSettings").addEventListener("click",()=>{ blip(); closeDrawer(); openPw("家長密碼",openSettings); });
 document.getElementById("brandHome").addEventListener("click",()=>selectCat("__all__"));
@@ -3263,7 +3339,7 @@ document.getElementById("resetToday").addEventListener("click",()=>{
 });
 
 function exportCode(){
-  const data={v:1,videos:VIDEOS,limitWd:LIMIT_WD,limitWe:LIMIT_WE,bed:BED,lockedCats:LOCKED_CATS,snd:SND,pw:PASSWORD};
+  const data={v:1,videos:VIDEOS,limitWd:LIMIT_WD,limitWe:LIMIT_WE,bed:BED,lockedCats:LOCKED_CATS,snd:SND,pw:PASSWORD,theme:THEME};
   return "BTV1."+btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 }
 document.getElementById("exportBtn").addEventListener("click",()=>{
@@ -3287,6 +3363,7 @@ document.getElementById("importBtn").addEventListener("click",()=>{
     LOCKED_CATS=Array.isArray(data.lockedCats)?data.lockedCats:[];
     SND=data.snd!==false;
     if(data.pw) PASSWORD=String(data.pw);
+    if(data.theme==="light"||data.theme==="dark"||data.theme==="auto") setTheme(data.theme);
     store.set("videos",VIDEOS); store.set("limitWd",LIMIT_WD); store.set("limitWe",LIMIT_WE);
     store.set("bed",BED); store.set("lockedCats",LOCKED_CATS); store.set("snd",SND); store.set("pw",PASSWORD);
     unlockedCats.clear();
@@ -3338,6 +3415,9 @@ document.getElementById("setSave").addEventListener("click",()=>{
   setTimeout(()=>document.getElementById("setOverlay").classList.remove("show"),700);
 });
 
+const themeMq=window.matchMedia("(prefers-color-scheme: dark)");
+if(themeMq.addEventListener) themeMq.addEventListener("change", ()=>{ if(THEME==="auto") applyTheme(); });
+applyTheme();
 buildCats();
 buildGrid();
 if(inBedtime()) showBed();
