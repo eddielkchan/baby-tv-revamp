@@ -29,7 +29,7 @@
 - **同步碼** —— 匯出一段碼，在另一部裝置匯入，片單同設定一齊搬過去。
 - **跨平台** —— 同一條網址，iPhone / iPad / Android / Windows / Mac 都用到。
 
-預設片單有「🎨 節目台」「📚 教育台」，以及 Numberblocks 第 1 至第 5 季的官方完整單集（第 1、2 季各 15 集，第 3 至 5 季各 30 集）。
+預設片單有「🎨 節目台」「📚 教育台」、Numberblocks 第 1 至第 5 季的官方完整單集（第 1、2 季各 15 集，第 3 至 5 季各 30 集），以及「🧡 Blippi Playtime」。Blippi 呢一台係官方頻道 [Blippi Playtime](https://www.youtube.com/@BlippiPlaytime) 影片分頁的快照，共 1173 條，由新到舊。頻道之後的新片唔會自動加入，Shorts 亦未收錄。
 
 ## 自己架設（免費）
 
